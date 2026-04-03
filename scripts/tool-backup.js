@@ -1,84 +1,82 @@
-/* --------------------------------------------------
- *  Financial Data (FMP)
- *  - FXAIX + FXNAX defaults
- *  - User tickers override defaults
- *  - Automatic stock/bond classification
- *  - Annualized return calculation
--------------------------------------------------- */
+/* -----------------------------
+ *   LOCAL STORAGE setup
+ * ----------------------------- */
 
-const FMP_API_KEY = "YOUR_API_KEY_HERE";
-
-/* Known bond tickers for classification */
-const BOND_TICKERS = [
-    "FXNAX", "BND", "AGG", "IEF", "SHY", "LQD", "VBTLX", "BNDX", "TIP"
-];
-
-/* Fetch real-time quote (optional, not used for return calc) */
-async function getFmpQuote(ticker) {
-    try {
-        const url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${FMP_API_KEY}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        return data?.[0]?.price ?? null;
-    } catch {
-        return null;
-    }
-}
-
-/* Fetch full historical OHLCV */
-async function getFmpHistorical(ticker) {
-    try {
-        const url = `https://financialmodelingprep.com/api/v3/historical-price-full/${ticker}?apikey=${FMP_API_KEY}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        return data?.historical ?? [];
-    } catch {
-        return [];
-    }
-}
-
-/* Compute annualized return from historical data */
-function computeAnnualReturn(history) {
-    if (history.length < 2) return null;
-
-    const first = history[history.length - 1].close; // oldest
-    const last = history[0].close; // newest
-
-    const years = history.length / 252; // ~252 trading days per year
-    return Math.pow(last / first, 1 / years) - 1;
-}
-
-/* --------------------------------------------------
- *  financialPerformance(tickers)
- *  - Classifies tickers into stocks vs bonds
- *  - Computes annualized returns
- *  - Falls back to defaults if needed
--------------------------------------------------- */
-async function financialPerformance(tickers) {
-    const stockReturns = [];
-    const bondReturns = [];
-
-    for (const t of tickers) {
-        const hist = await getFmpHistorical(t);
-        const annual = computeAnnualReturn(hist);
-        if (annual === null) continue;
-
-        if (BOND_TICKERS.includes(t.toUpperCase())) {
-            bondReturns.push(annual);
-        } else {
-            stockReturns.push(annual);
-        }
-    }
-
-    const avg = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
-
-    return {
-        avgStock: stockReturns.length ? avg(stockReturns) : null,
-        avgBond: bondReturns.length ? avg(bondReturns) : null
+function saveInputs() {
+    const inputs = {
+        currentAge: document.getElementById("currentAge").value,
+        retireAge: document.getElementById("retireAge").value,
+        currentLump: document.getElementById("currentLump").value,
+        currentSalary: document.getElementById("currentSalary").value,
+        investmentPct: document.getElementById("investmentPct").value,
+        salaryGrowth: document.getElementById("salaryGrowth").value,
+        withdrawRate: document.getElementById("withdrawRate").value,
+        inflation: document.getElementById("inflation").value,
+        stockVol: document.getElementById("stockVol").value,
+        bondVol: document.getElementById("bondVol").value,
+        mcRuns: document.getElementById("mcRuns").value,
+        tickers: document.getElementById("tickers").value
     };
+
+    localStorage.setItem("retirementInputs", JSON.stringify(inputs));
 }
+
+
+function loadInputs() {
+    const saved = JSON.parse(localStorage.getItem("retirementInputs"));
+    if (!saved) return;
+
+    for (const key in saved) {
+        const el = document.getElementById(key);
+        if (el) el.value = saved[key];
+    }
+}
+
+function saveLastTimeline(timeline) {
+    localStorage.setItem("lastTimeline", JSON.stringify(timeline));
+}
+
+function restoreLastTimeline(ctx) {
+    const saved = JSON.parse(localStorage.getItem("lastTimeline"));
+    if (saved) {
+        renderBalanceChart(ctx, saved);
+    }
+}
+
 /* --------------------------------------------------
- *  Core Growth Engine (helper for accumulation & withdrawals)
+ *  Number Formatting
+-------------------------------------------------- */
+function formatNumberInput(input) {
+    let raw = input.value.replace(/,/g, "");
+    if (raw === "" || isNaN(raw)) return;
+    input.value = Number(raw).toLocaleString();
+}
+
+/* --------------------------------------------------
+ *  Financial Math
+-------------------------------------------------- */
+function fv(rate, nper, pmt, pv) {
+    if (rate === 0) return -pv - pmt * nper;
+    const factor = Math.pow(1 + rate, nper);
+    return -pv * factor - pmt * (factor - 1) / rate;
+}
+
+function randn() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+function sampleReturns(stockRate, bondRate, stockVol = 0.15, bondVol = 0.05) {
+    return [
+        stockRate + stockVol * randn(),
+        bondRate + bondVol * randn()
+    ];
+}
+
+/* --------------------------------------------------
+ *  Growth Engine
 -------------------------------------------------- */
 function growYearsWithTimeline({
     lumpValue,
@@ -88,64 +86,120 @@ function growYearsWithTimeline({
     bondRate,
     stockWeight,
     bondWeight,
-    salaryGrowth,
-    years,
-    randomize,
-    stockVol,
-    bondVol
+    salaryGrowth = 0.02,
+    years = 1,
+    randomize = false,
+    stockVol = 0.15,
+    bondVol = 0.05
 }) {
-    let balance = lumpValue;
+    let currentLump = lumpValue;
     let currentSalary = salary;
     const timeline = [];
 
-    for (let i = 0; i < years; i++) {
-        // Salary grows annually
-        currentSalary *= (1 + salaryGrowth);
+    for (let y = 0; y < years; y++) {
+        let sr = stockRate;
+        let br = bondRate;
 
-        // Contribution
-        const contribution = currentSalary * investmentPct;
-        balance += contribution;
-
-        // Expected blended return
-        let expectedReturn =
-            stockWeight * stockRate +
-            bondWeight * bondRate;
-
-        // Monte Carlo randomization
         if (randomize) {
-            const stockShock = stockVol * randn_bm();
-            const bondShock = bondVol * randn_bm();
-            expectedReturn =
-                stockWeight * (stockRate + stockShock) +
-                bondWeight * (bondRate + bondShock);
+            const [rs, rb] = sampleReturns(stockRate, bondRate, stockVol, bondVol);
+            sr = rs;
+            br = rb;
         }
 
-        // Apply growth
-        balance *= (1 + expectedReturn);
+        const monthlyContribution = (currentSalary / 12) * (investmentPct / 100);
 
-        timeline.push(balance);
+        const stockLump = currentLump * stockWeight;
+        const bondLump = currentLump * bondWeight;
+
+        const stockContrib = monthlyContribution * stockWeight;
+        const bondContrib = monthlyContribution * bondWeight;
+
+        const stockFuture = fv(sr / 12, 12, -stockContrib, -stockLump);
+        const bondFuture = fv(br / 12, 12, -bondContrib, -bondLump);
+
+        currentLump = stockFuture + bondFuture;
+        currentSalary *= (1 + salaryGrowth);
+
+        timeline.push(currentLump);
     }
 
     return {
-        futureNominal: balance,
+        futureNominal: currentLump,
         nextSalary: currentSalary,
         timeline
     };
 }
 
 /* --------------------------------------------------
- *  Normal distribution helper for Monte Carlo
+ *  Fund Performance (Simulated)
 -------------------------------------------------- */
-function randn_bm() {
-    // Box–Muller transform
-    let u = 0, v = 0;
-    while (u === 0) u = Math.random();
-    while (v === 0) v = Math.random();
-    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+async function fetchFundData(ticker) {
+    const t = ticker.toUpperCase();
+
+    const fundMap = {
+        "FXAIX": 0.10, "VFIAX": 0.10, "VOO": 0.10,
+        "VTSAX": 0.09, "VTI": 0.09,
+        "FXNAX": 0.04, "BND": 0.04, "AGG": 0.04, "VBTLX": 0.04
+    };
+
+    let avgAnnual =
+        fundMap[t] ??
+        (t.includes("BND") || t.includes("AGG") || t.includes("BOND") ? 0.04 : 0.08);
+
+    return {
+        ticker: t,
+        avgAnnual,
+        start: "Simulated",
+        end: "Simulated"
+    };
+}
+
+async function financialPerformance(tickers) {
+    const funds = {};
+
+    for (const t of tickers) {
+        const info = await fetchFundData(t);
+        funds[t] = {
+            avg_annual: info.avgAnnual,
+            start: info.start,
+            end: info.end
+        };
+    }
+
+    const sortedFunds = Object.entries(funds).sort(
+        (a, b) => a[1].avg_annual - b[1].avg_annual
+    );
+
+    const conservative = [];
+    const moderateAggressive = [];
+
+    for (const [ticker, info] of sortedFunds) {
+        if (info.avg_annual < 0.06) conservative.push([ticker, info.avg_annual]);
+        else moderateAggressive.push([ticker, info.avg_annual]);
+    }
+
+    const avgConservative =
+        conservative.length > 0
+            ? conservative.reduce((t, [, r]) => t + r, 0) / conservative.length
+            : 0;
+
+    const avgModerateAggressive =
+        moderateAggressive.length > 0
+            ? moderateAggressive.reduce((t, [, r]) => t + r, 0) /
+            moderateAggressive.length
+            : 0;
+
+    return {
+        sortedFunds,
+        conservative,
+        moderateAggressive,
+        avgConservative,
+        avgModerateAggressive
+    };
 }
 
 /* --------------------------------------------------
- *  Core Retirement Simulation
+ *  Core Simulation (Part 1)
 -------------------------------------------------- */
 function simulateRetirement({
     age,
@@ -205,13 +259,10 @@ function simulateRetirement({
         currentSalary = nextSalary;
     }
 
-    /* --------------------------------------------------
-     *  Accumulation Phases
-    -------------------------------------------------- */
+    // Accumulation phases
     runPhase(Math.max(currentAge, 20), Math.min(retireAge, 50), 1.0, 0.0);
     runPhase(Math.max(currentAge, 50), Math.min(retireAge, 60), 0.65, 0.35);
     runPhase(Math.max(currentAge, 60), retireAge, 0.5, 0.5);
-
     const lumpAtRetire = currentLump;
 
     /* --------------------------------------------------
@@ -234,7 +285,6 @@ function simulateRetirement({
         });
 
         currentLump = futureNominal;
-
         const withdrawNominal = currentLump * withdrawRate;
         currentLump -= withdrawNominal;
         currentAge++;
@@ -281,7 +331,6 @@ function simulateRetirement({
         });
 
         currentLump = futureNominal;
-
         const withdrawNominal = currentLump * withdrawRate;
         currentLump -= withdrawNominal;
         currentAge++;
@@ -318,7 +367,6 @@ function simulateRetirement({
         legacyDataReal
     };
 }
-
 /* --------------------------------------------------
  *  Monte Carlo Simulation
 -------------------------------------------------- */
@@ -379,6 +427,11 @@ function monteCarloSimulation({
         allResults: results
     };
 }
+
+document.querySelectorAll("#retirement-form input")
+    .forEach(el => el.addEventListener("input", saveInputs));
+
+
 /* --------------------------------------------------
  *  Formatting & Tables
 -------------------------------------------------- */
@@ -412,9 +465,6 @@ let withdrawChart = null;
 let withdrawChartReal = null;
 let mcChart = null;
 
-/* ------------------------------
- *  Balance Chart (Nominal)
------------------------------- */
 function renderBalanceChart(ctx, timeline) {
     const labels = timeline.map(d => d.age);
     const data = timeline.map(d => d.balance);
@@ -442,9 +492,6 @@ function renderBalanceChart(ctx, timeline) {
     });
 }
 
-/* ------------------------------
- *  Withdrawals (Nominal)
------------------------------- */
 function renderWithdrawChart(ctx, timeline) {
     const labels = timeline.map(d => d.age);
     const data = timeline.map(d => d.withdrawn);
@@ -470,9 +517,6 @@ function renderWithdrawChart(ctx, timeline) {
     });
 }
 
-/* ------------------------------
- *  Withdrawals + Balance (Real)
------------------------------- */
 function renderWithdrawChartReal(ctx, timeline, inflation) {
     const labels = timeline.map(d => d.age);
     const withdrawnReal = timeline.map(d => d.withdrawnReal);
@@ -518,9 +562,6 @@ function renderWithdrawChartReal(ctx, timeline, inflation) {
         `Withdrawals & Balance (Real Dollars, Inflation Adjusted at ${(inflation * 100).toFixed(1)}%)`;
 }
 
-/* ------------------------------
- *  Monte Carlo Histogram
------------------------------- */
 function renderMcChart(ctx, results) {
     if (mcChart) mcChart.destroy();
 
@@ -580,6 +621,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const mcCtx = document.getElementById("mcChart").getContext("2d");
 
     loadInputs();
+
     restoreLastTimeline(balanceCtx);
 
     ["currentLump", "currentSalary"].forEach(id => {
@@ -593,9 +635,6 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         resultsText.value = "";
 
-        /* ------------------------------
-         *  Read Inputs
-        ------------------------------ */
         const currentAge = parseInt(document.getElementById("currentAge").value, 10);
         const gender = document.getElementById("gender").value.trim().toLowerCase();
         const retireAge = parseInt(document.getElementById("retireAge").value, 10);
@@ -613,40 +652,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const mcRuns = parseInt(document.getElementById("mcRuns").value.replace(/,/g, ""), 10);
 
-        /* ------------------------------
-         *  Ticker Logic
-         *  - Blank → FXAIX + FXNAX
-         *  - User input → override defaults
-         *  - Auto classify stock vs bond
-        ------------------------------ */
         const tickersRaw = document.getElementById("tickers").value.trim();
+        const tickers = tickersRaw ? tickersRaw.split(",").map(t => t.trim()) : [];
 
-        let tickers = [];
-        if (tickersRaw.length === 0) {
-            tickers = ["FXAIX", "FXNAX"];
-        } else {
-            tickers = tickersRaw.split(",").map(t => t.trim().toUpperCase());
-        }
-
-        /* ------------------------------
-         *  Default fallback values
-        ------------------------------ */
         let stockRate = 0.08;
         let bondRate = 0.04;
 
-        /* ------------------------------
-         *  Fetch real performance if tickers exist
-        ------------------------------ */
         if (tickers.length > 0) {
             const perf = await financialPerformance(tickers);
-
-            stockRate = perf.avgStock ?? 0.08;
-            bondRate = perf.avgBond ?? 0.04;
+            stockRate = perf.avgModerateAggressive || 0.08;
+            bondRate = perf.avgConservative || 0.04;
         }
 
-        /* ------------------------------
-         *  Run Core Simulation
-        ------------------------------ */
         const sim = simulateRetirement({
             age: currentAge,
             gender,
@@ -664,16 +681,10 @@ document.addEventListener("DOMContentLoaded", () => {
             bondVol
         });
 
-        /* ------------------------------
-         *  Render Charts
-        ------------------------------ */
         renderBalanceChart(balanceCtx, sim.balanceTimeline);
         renderWithdrawChart(withdrawCtx, sim.withdrawTimeline);
         renderWithdrawChartReal(withdrawCtxReal, sim.withdrawTimeline, inflation);
 
-        /* ------------------------------
-         *  Monte Carlo Simulation
-        ------------------------------ */
         const mc = monteCarloSimulation({
             nRuns: mcRuns,
             age: currentAge,
@@ -693,9 +704,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         renderMcChart(mcCtx, mc.allResults);
 
-        /* ------------------------------
-         *  Build Results Text
-        ------------------------------ */
         let out = "";
         out += `Lump sum at retirement (nominal): ${formatCurrency(sim.lumpAtRetire)}\n`;
         out += `Final legacy (real): ${formatCurrency(sim.finalLegacyReal)}\n\n`;
