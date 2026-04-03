@@ -5,12 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Financial Planning Resource - Jesse Hamilton">
-    <title>Retirement Simulator</title>
+    <title>Retirement Simulator (Python)</title>
     <meta name="author" content="Jesse Hamilton">
 
     <link rel="stylesheet" href="styles/tool.css">
+
+    <!-- Chart.js (same as JS version) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="scripts/tool.js" defer></script>
+
+    <!-- PyScript -->
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+    <!-- Charts helper for Python output -->
+    <script src="scripts/pysim-charts.js" defer></script>
 </head>
 
 <body>
@@ -24,7 +32,7 @@
                 <li><a href="phases.html" id="phases" target="_blank">Phases</a></li>
                 <li><a href="vehicles.html" id="vehicles" target="_blank">Investment Vehicles</a></li>
                 <li><a href="resources.html" id="resources" target="_blank">Resources</a></li>
-                <li><a href="tool.html" id="tool" target="_blank">Planning Tool</a></li>
+                <li><a href="tool.html" id="tool" target="_blank">JS Planning Tool</a></li>
             </ul>
         </nav>
     </header>
@@ -37,7 +45,7 @@
 
     <div id="retirement-simulator" class="app-container">
         <header class="app-header">
-            <h1>Retirement Calculations with Monte Carlo Simulation</h1>
+            <h1>Retirement Calculations with Monte Carlo Simulation (Python)</h1>
         </header>
 
         <main class="app-main">
@@ -120,7 +128,7 @@
                         Note: Monte Carlo runs of 1000+ may freeze the UI in the browser.
                     </p>
 
-                    <button type="submit" class="primary-btn">Can I retire?</button>
+                    <button type="submit" class="primary-btn">Can I retire? (Python)</button>
                 </form>
             </section>
 
@@ -131,33 +139,33 @@
 
             <section class="charts-section">
                 <h2>Charts</h2>
-            
+
                 <div class="chart-wrapper">
                     <h3>Deterministic Balance Over Time</h3>
                     <canvas id="balanceChart"></canvas>
                 </div>
-            
+
                 <div class="chart-wrapper">
                     <h3>Deterministic Withdrawals Over Time</h3>
                     <canvas id="withdrawChart"></canvas>
                 </div>
-            
+
                 <div class="chart-wrapper">
                     <h3 id="realChartHeader">Withdrawals & Balance (Real Dollars)</h3>
                     <canvas id="withdrawChartReal"></canvas>
                 </div>
-            
+
                 <div class="chart-wrapper">
                     <h3>Monte Carlo Final Legacy Distribution</h3>
                     <canvas id="mcChart"></canvas>
                 </div>
-            
+
             </section>
 
         </main>
 
         <footer class="app-footer">
-            <p>Retirement and Saving Planning — Browser Simulation</p>
+            <p>Retirement and Saving Planning — Python Browser Simulation</p>
         </footer>
     </div>
 
@@ -166,9 +174,66 @@
         <p>Last Modification: <span id="lastModified"></span></p>
     </footer>
 
+    <!-- PyScript engine + glue -->
+    <py-script src="pysim_engine.py"></py-script>
+
+    <py-script>
+        from pyscript import Element
+        import js
+        from pysim_engine import run_from_form
+
+        def on_submit(event):
+        event.preventDefault()
+
+        # Read inputs
+        current_age = int(Element("currentAge").value)
+        gender = Element("gender").value.strip().lower()
+        retire_age = int(Element("retireAge").value)
+
+        def parse_money(id_):
+        txt = Element(id_).value.replace(",", "").strip()
+        return float(txt) if txt else 0.0
+
+        current_lump = parse_money("currentLump")
+        current_salary = parse_money("currentSalary")
+
+        investment_pct = float(Element("investmentPct").value)
+        tickers_raw = Element("tickers").value
+        tickers = [t.strip().upper() for t in tickers_raw.split(",") if t.strip()]
+
+        salary_growth = float(Element("salaryGrowth").value) / 100.0
+        withdraw_rate = float(Element("withdrawRate").value) / 100.0
+        inflation = float(Element("inflation").value) / 100.0
+        mc_runs = int(Element("mcRuns").value)
+        stock_vol = float(Element("stockVol").value) / 100.0
+        bond_vol = float(Element("bondVol").value) / 100.0
+
+        result = run_from_form(
+        age=current_age,
+        gender=gender,
+        retire_age=retire_age,
+        lump_value=current_lump,
+        salary=current_salary,
+        investment_pct=investment_pct,
+        tickers=tickers,
+        salary_growth=salary_growth,
+        inflation=inflation,
+        withdraw_rate=withdraw_rate,
+        mc_runs=mc_runs,
+        stock_vol=stock_vol,
+        bond_vol=bond_vol,
+        )
+
+        # Text output
+        Element("resultsText").write(result["text_output"])
+
+        # Charts (pass to JS)
+        js.updateCharts(result["charts"])
+
+        form = Element("retirement-form").element
+        form.addEventListener("submit", on_submit)
+    </py-script>
+
 </body>
 
 </html>
-
-                
-    
