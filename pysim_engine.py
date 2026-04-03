@@ -1,3 +1,5 @@
+print("INLINE PYTHON IS RUNNING")
+
 print("PyScript engine loaded")
 
 import numpy as np
