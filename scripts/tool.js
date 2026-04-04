@@ -50,35 +50,36 @@ function formatNumberInput(input) {
     if (raw === "" || isNaN(raw)) return;
     input.value = Number(raw).toLocaleString();
 }
+
 /* --------------------------------------------------
- *  FINANCIAL DATA (FMP)
+ *  FINANCIAL DATA (YAHOO FINANCE)
 -------------------------------------------------- */
 
-const FMP_API_KEY = "YOUR_API_KEY_HERE";
-
-const BOND_TICKERS = [
-    "FXNAX", "BND", "AGG", "IEF", "SHY", "LQD", "VBTLX", "BNDX", "TIP"
-];
-
-async function getFmpHistorical(ticker) {
+async function getYahooHistorical(ticker) {
     try {
-        const url = `https://financialmodelingprep.com/api/v3/historical-price-full/${ticker}?apikey=${FMP_API_KEY}`;
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=max`;
         const res = await fetch(url);
         const data = await res.json();
-        return data?.historical ?? [];
-    } catch {
+
+        const result = data?.chart?.result?.[0];
+        if (!result) return [];
+
+        const timestamps = result.timestamp;
+        const closes = result.indicators?.quote?.[0]?.close;
+
+        if (!timestamps || !closes) return [];
+
+        // Convert to your existing format
+        const history = timestamps.map((ts, i) => ({
+            date: new Date(ts * 1000),
+            close: closes[i]
+        })).filter(d => d.close != null);
+
+        return history;
+    } catch (err) {
+        console.error("Yahoo fetch error:", err);
         return [];
     }
-}
-
-function computeAnnualReturn(history) {
-    if (history.length < 2) return null;
-
-    const first = history[history.length - 1].close;
-    const last = history[0].close;
-
-    const years = history.length / 252;
-    return Math.pow(last / first, 1 / years) - 1;
 }
 
 async function financialPerformance(tickers) {
@@ -86,7 +87,7 @@ async function financialPerformance(tickers) {
     const bondReturns = [];
 
     for (const t of tickers) {
-        const hist = await getFmpHistorical(t);
+        const hist = await getYahooHistorical(t);
         const annual = computeAnnualReturn(hist);
         if (annual === null) continue;
 
@@ -108,6 +109,7 @@ async function financialPerformance(tickers) {
         bondReturns
     };
 }
+
 /* --------------------------------------------------
  *  GROWTH ENGINE
 -------------------------------------------------- */
