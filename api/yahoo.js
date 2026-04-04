@@ -10,12 +10,17 @@ export default async function handler(req, res) {
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=max&interval=1d`;
 
         const response = await fetch(url, {
+            cache: "no-store",
             headers: {
-                "User-Agent": "Mozilla/5.0" // prevents Yahoo from blocking serverless requests
+                "User-Agent": "Mozilla/5.0"
             }
         });
 
         const data = await response.json();
+
+        // debug line
+        console.log("Yahoo raw response:", data);
+        // end debug line
 
         const result = data?.chart?.result?.[0];
         if (!result) {
