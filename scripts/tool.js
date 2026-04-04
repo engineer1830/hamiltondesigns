@@ -61,7 +61,21 @@ function computeAnnualReturn(history) {
     const first = history[0].close;                     // oldest price
     const last = history[history.length - 1].close;    // newest price
 
-    const years = history.length / 252; // daily → years
+    const msPerYear = 1000 * 60 * 60 * 24 * 365.25;
+    const years = (history[history.length - 1].date - history[0].date) / msPerYear;
+
+
+    // ⭐ Add these logs for debugging
+    console.log("---- RETURN DEBUG ----");
+    console.log("First entry:", history[0]);
+    console.log("Last entry:", history[history.length - 1]);
+    console.log("Years spanned:", years);
+    console.log("Computed CAGR:", Math.pow(last / first, 1 / years) - 1);
+    console.log("----------------------");
+
+    if (years <= 0) return null;
+    // End debug content
+
     return Math.pow(last / first, 1 / years) - 1;
 }
 
