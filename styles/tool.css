@@ -344,3 +344,28 @@ main {
     align-items: center;
     text-align: center;
 }
+
+.one-year-warning
+{
+    background: #fff4e5;
+    border-left: 4px solid #e69500;
+    padding: 0.75rem 1rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #5a3d00;
+}
+
+.one-year-warning p
+{
+    margin: 0 0 0.5rem 0;
+}
+
+.one-year-checkbox
+{
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+}

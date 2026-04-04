@@ -108,13 +108,57 @@ async function getEodHistorical(ticker) {
     }
 }
 
+/* --------------------------------------------------
+ *  1-YEAR DATA WARNING HANDLER
+-------------------------------------------------- */
+
+function handleHistoricalData(rawData) {
+    const warningBox = document.getElementById("oneYearWarning");
+    const useOneYear = document.getElementById("useOneYear");
+
+    const last = rawData?.[rawData.length - 1];
+
+    // EODHD free tier includes:  { warning: "Data is limited by one year..." }
+    if (last?.warning) {
+        warningBox.style.display = "block";
+
+        // User must explicitly opt in
+        if (!useOneYear.checked) {
+            console.warn("Simulation halted: only 1 year of data available.");
+            return null;
+        }
+    } else {
+        warningBox.style.display = "none";
+    }
+
+    return rawData;
+}
+
+/* --------------------------------------------------
+ *  FINANCIAL PERFORMANCE (STOCK/BOND RETURNS)
+-------------------------------------------------- */
 
 async function financialPerformance(tickers) {
     const stockReturns = [];
     const bondReturns = [];
 
     for (const t of tickers) {
-        const hist = await getEodHistorical(t);
+        let hist = await getEodHistorical(t);
+
+        // ⭐ Apply the warning logic here
+        hist = handleHistoricalData(hist);
+        if (!hist) {
+            // Stop early if user did not opt in
+            return {
+                avgStock: null,
+                avgBond: null,
+                stockList: [],
+                bondList: [],
+                stockReturns: [],
+                bondReturns: []
+            };
+        }
+
         const annual = computeAnnualReturn(hist);
         if (annual === null) continue;
 
@@ -136,6 +180,7 @@ async function financialPerformance(tickers) {
         bondReturns
     };
 }
+
 
 /* --------------------------------------------------
  *  GROWTH ENGINE

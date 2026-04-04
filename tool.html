@@ -82,6 +82,17 @@
                             <span class="label-text">Tickers (comma-separated)</span>
                             <input type="text" id="tickers" placeholder="e.g., VTI, BND">
                         </label>
+                        
+                        <div id="oneYearWarning" class="one-year-warning" style="display:none;">
+                            <p>
+                                ⚠️ Only <strong>1 year</strong> of historical data is available for this ticker.
+                            </p>
+                            <label class="one-year-checkbox">
+                                <input type="checkbox" id="useOneYear">
+                                Proceed using 1-year data
+                            </label>
+                        </div>
+                        
 
                         <label>
                             <span class="label-text">Annual salary growth % <span class="required">*</span></span>
