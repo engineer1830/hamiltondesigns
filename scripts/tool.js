@@ -74,18 +74,8 @@ async function financialPerformance(tickers) {
 
     return {
         avgStock: stockReturns.length ? avg(stockReturns) : null,
-        avgBond: bondReturns.length ? avg(bondReturns) : null,
-        stockList: tickers.filter(t => !BOND_TICKERS.includes(t)),
-        bondList: tickers.filter(t => BOND_TICKERS.includes(t)),
-
-        stockReturns,
-        bondReturns
+        avgBond: bondReturns.length ? avg(bondReturns) : null
     };
-
-    // return {
-    //     avgStock: stockReturns.length ? avg(stockReturns) : null,
-    //     avgBond: bondReturns.length ? avg(bondReturns) : null
-    // };
 }
 /* --------------------------------------------------
  *  Core Growth Engine (helper for accumulation & withdrawals)
@@ -645,10 +635,22 @@ document.addEventListener("DOMContentLoaded", () => {
         let bondRate = 0.04;
 
         /* ------------------------------
+        *  Prepare perf object for ticker report
+       ------------------------------ */
+        let perf = {
+            avgStock: null,
+            avgBond: null,
+            stockList: [],
+            bondList: [],
+            stockReturns: [],
+            bondReturns: []
+        };
+
+        /* ------------------------------
          *  Fetch real performance if tickers exist
         ------------------------------ */
         if (tickers.length > 0) {
-            const perf = await financialPerformance(tickers);
+            perf = await financialPerformance(tickers);
 
             stockRate = perf.avgStock ?? 0.08;
             bondRate = perf.avgBond ?? 0.04;
@@ -707,37 +709,6 @@ document.addEventListener("DOMContentLoaded", () => {
          *  Build Results Text
         ------------------------------ */
         let out = "";
-
-        /* ------------------------------
-         *  Ticker Report (Option C)
-        ------------------------------ */
-        out += "Ticker Analysis:\n";
-        out += `  User Input: ${tickersRaw.length === 0 ? "None (using defaults FXAIX, FXNAX)" : tickersRaw}\n`;
-
-        out += "  Classified:\n";
-
-        if (perf.stockList && perf.stockList.length > 0) {
-            out += "    Stocks:\n";
-            perf.stockList.forEach((t, i) => {
-                const pct = (perf.stockReturns[i] * 100).toFixed(2);
-                out += `      ${t} → ${pct}%\n`;
-            });
-        } else {
-            out += "    Stocks: (none)\n";
-        }
-
-        if (perf.bondList && perf.bondList.length > 0) {
-            out += "    Bonds:\n";
-            perf.bondList.forEach((t, i) => {
-                const pct = (perf.bondReturns[i] * 100).toFixed(2);
-                out += `      ${t} → ${pct}%\n`;
-            });
-        } else {
-            out += "    Bonds: (none)\n";
-            
-        }
-        out += "\n";
-
         out += `Lump sum at retirement (nominal): ${formatCurrency(sim.lumpAtRetire)}\n`;
         out += `Final legacy (real): ${formatCurrency(sim.finalLegacyReal)}\n\n`;
 
@@ -765,3 +736,4 @@ document.addEventListener("DOMContentLoaded", () => {
     if (yearSpan) yearSpan.textContent = new Date().getFullYear();
     if (modSpan) modSpan.textContent = document.lastModified;
 });
+
