@@ -66,33 +66,32 @@ function computeAnnualReturn(history) {
 }
 
 /* --------------------------------------------------
- *  FINANCIAL DATA (YAHOO FINANCE)
+ *  FINANCIAL DATA (ALPHA VANTAGE)
 -------------------------------------------------- */
 
-async function getYahooHistorical(ticker) {
-    try {
-        const base = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=max`;
-        const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(base)}`;
+const ALPHA_KEY = "WENJUOLF6XZNDE0V";
 
+async function getAlphaHistorical(ticker) {
+    try {
+        const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${ticker}&outputsize=full&apikey=${ALPHA_KEY}`;
         const res = await fetch(url);
         const data = await res.json();
 
-        const result = data?.chart?.result?.[0];
-        if (!result) return [];
+        const series = data["Time Series (Daily)"];
+        if (!series) return [];
 
-        const timestamps = result.timestamp;
-        const closes = result.indicators?.quote?.[0]?.close;
-
-        if (!timestamps || !closes) return [];
-
-        const history = timestamps.map((ts, i) => ({
-            date: new Date(ts * 1000),
-            close: closes[i]
-        })).filter(d => d.close != null);
+        // Convert to your existing format
+        const history = Object.entries(series)
+            .map(([date, values]) => ({
+                date: new Date(date),
+                close: parseFloat(values["5. adjusted close"])
+            }))
+            .filter(d => !isNaN(d.close))
+            .sort((a, b) => a.date - b.date); // oldest → newest
 
         return history;
     } catch (err) {
-        console.error("Yahoo fetch error:", err);
+        console.error("Alpha fetch error:", err);
         return [];
     }
 }
@@ -102,7 +101,7 @@ async function financialPerformance(tickers) {
     const bondReturns = [];
 
     for (const t of tickers) {
-        const hist = await getYahooHistorical(t);
+        const hist = await getAlphaHistorical(t);
         const annual = computeAnnualReturn(hist);
         if (annual === null) continue;
 
