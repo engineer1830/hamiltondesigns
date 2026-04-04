@@ -17,6 +17,9 @@ export default async function handler(req, res) {
         }
 
         const data = await response.json();
+        // debug begin
+        console.log("EOD API HIT:", symbol);
+        // debug end
         return res.status(200).json(data);
 
     } catch (err) {
