@@ -635,22 +635,10 @@ document.addEventListener("DOMContentLoaded", () => {
         let bondRate = 0.04;
 
         /* ------------------------------
-        *  Prepare perf object for ticker report
-       ------------------------------ */
-        let perf = {
-            avgStock: null,
-            avgBond: null,
-            stockList: [],
-            bondList: [],
-            stockReturns: [],
-            bondReturns: []
-       };
-
-        /* ------------------------------
          *  Fetch real performance if tickers exist
         ------------------------------ */
         if (tickers.length > 0) {
-            perf = await financialPerformance(tickers);
+            const perf = await financialPerformance(tickers);
 
             stockRate = perf.avgStock ?? 0.08;
             bondRate = perf.avgBond ?? 0.04;
