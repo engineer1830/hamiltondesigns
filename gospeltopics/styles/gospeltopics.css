@@ -577,10 +577,10 @@ a:focus
     text-decoration: underline;
 }
 
-/* FORCE neutral link colors in LIGHT MODE */
-body:not(.dark) a,
-body:not(.dark) a:link,
-body:not(.dark) a:visited
+/* FORCE neutral link colors in LIGHT MODE — MARKDOWN ONLY */
+body:not(.dark) #markdownContent a,
+body:not(.dark) #markdownContent a:link,
+body:not(.dark) #markdownContent a:visited
 {
     color: inherit !important;
     text-decoration: none !important;
