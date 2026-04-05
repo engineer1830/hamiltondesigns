@@ -139,7 +139,7 @@ body.dark a:focus
 }
 
 /* Restore card title color (homepage cards) */
-.layout .card h2
+.card a
 {
     color: #000;
 }
