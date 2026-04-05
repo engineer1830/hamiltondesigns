@@ -77,7 +77,7 @@ body.dark .top-header .home-link
    LAYOUT
 ============================================================ */
 
-/* Hero background image behind main content */
+/* Hero background image behind main content (light mode only) */
 .layout
 {
     background-image: url("/hamiltondesigns/gospeltopics/images/scriptures.jpeg");
@@ -104,12 +104,16 @@ body.dark .top-header .home-link
     z-index: 0;
 }
 
-/* Disable hero image in dark mode */
+/* Disable hero image + overlay in dark mode */
 body.dark .layout
 {
     background-image: none;
     background-color: #1e1e1e;
-    /* matches your dark body background */
+}
+
+body.dark .layout::before
+{
+    background: none;
 }
 
 /* ============================================================
@@ -127,10 +131,47 @@ body.dark .layout
     transition: background 0.3s ease, border-color 0.3s ease;
 }
 
+/* Sidebar background image (light mode only) */
+.sidebar
+{
+    background-image: url("/hamiltondesigns/gospeltopics/images/slc.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    position: relative;
+    z-index: 2;
+}
+
+/* Sidebar overlay for readability */
+.sidebar::before
+{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.65);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Ensure sidebar content sits above overlay */
+.sidebar>*
+{
+    position: relative;
+    z-index: 1;
+}
+
+/* Dark mode sidebar: no image, no overlay */
 body.dark .sidebar
 {
-    background: #2a2a2a;
+    background-image: none;
+    background-color: #2a2a2a;
     border-color: #444;
+}
+
+body.dark .sidebar::before
+{
+    background: none;
 }
 
 .sidebar-header
@@ -260,54 +301,6 @@ body.dark .nav-section a.active
     color: #9bbcff;
 }
 
-/* Sidebar background image */
-.sidebar
-{
-    background-image: url("/hamiltondesigns/gospeltopics/images/slc.jpg");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    /* optional, matches hero */
-    position: relative;
-    /* required for overlay */
-    z-index: 2;
-    /* stays above layout overlay */
-}
-
-/* Sidebar overlay for readability */
-.sidebar::before
-{
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.65);
-    /* same as hero overlay */
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* Ensure sidebar content sits above overlay */
-.sidebar>*
-{
-    position: relative;
-    z-index: 1;
-}
-
-/* Disable sidebar image in dark mode */
-body.dark .sidebar
-{
-    background-image: none;
-    background-color: #2a2a2a;
-    /* matches your dark sidebar color */
-}
-
-body.dark .sidebar::before
-{
-    background: none;
-    /* remove the light overlay */
-}
-
 /* ============================================================
    CONTENT AREA
 ============================================================ */
@@ -315,6 +308,12 @@ body.dark .sidebar::before
 {
     padding: 2rem 3rem;
     overflow-y: auto;
+    background: transparent;
+}
+
+body.dark .content
+{
+    background: #1e1e1e;
 }
 
 .content article
