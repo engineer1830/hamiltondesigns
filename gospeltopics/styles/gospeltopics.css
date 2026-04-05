@@ -319,6 +319,14 @@ body.dark .card .read-link
     color: #9bbcff;
 }
 
+.card-link
+{
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+}
+
 /* ============================================================
    PAGINATION
 ============================================================ */
