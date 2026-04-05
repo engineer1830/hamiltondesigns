@@ -262,5 +262,20 @@
             "stories",
             "Pack"
         ]
+    },
+    {
+        "title": "Parenting Challenges",
+        "category": "Challenges",
+        "url": "writings/Challenges/parenting-challenges.html",
+        "mdUrl": "content/Challenges/parenting-challenges.md",
+        "keywords": [
+            "parenting",
+            "children",
+            "agency",
+            "growth",
+            "atonement",
+            "family",
+            "Flossie Wood"
+        ]
     }
 ]
