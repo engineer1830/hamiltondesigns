@@ -124,5 +124,22 @@
             "Elder Clayton",
             "The Finest Homes"
         ]
+    },
+    {
+        "title": "Law",
+        "category": "Law",
+        "url": "writings/Law/law.html",
+        "mdUrl": "content/Law/law.md",
+        "keywords": [
+            "law",
+            "eternal law",
+            "obedience",
+            "spheres",
+            "celestial",
+            "terrestrial",
+            "telestial",
+            "priesthood power",
+            "eternity"
+        ]
     }
 ]
