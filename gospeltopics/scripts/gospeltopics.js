@@ -73,7 +73,10 @@ function buildSidebar() {
         categories[category].forEach(item => {
             const li = document.createElement("li");
             const link = document.createElement("a");
-            link.href = item.url;
+
+            // ⭐ FIXED: absolute path so links work from ANY page
+            link.href = "/hamiltondesigns/gospeltopics/" + item.url;
+
             link.textContent = item.title;
             li.appendChild(link);
             list.appendChild(li);
@@ -84,7 +87,6 @@ function buildSidebar() {
         nav.appendChild(section);
     });
 }
-
 
 /* ============================================================
    ACTIVE LINK HIGHLIGHTING
