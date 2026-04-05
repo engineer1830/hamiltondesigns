@@ -143,6 +143,17 @@ body.dark a:focus
 {
     color: #000;
 }
+/* Restore related-writing link color */
+#relatedWritings a
+{
+    color: #000;
+}
+
+/* Dark mode related-writing links */
+body.dark #relatedWritings a
+{
+    color: #ccc;
+}
 
 /* Restore sidebar category color */
 .sidebar .nav-category
