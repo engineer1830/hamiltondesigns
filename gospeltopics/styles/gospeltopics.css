@@ -166,6 +166,17 @@ body.dark .layout::before
 {
     background: none;
 }
+/* Restore related-writing link color */
+.related a
+{
+    color: #000;
+}
+
+/* Dark mode related-writing links */
+body.dark .related a
+{
+    color: #ccc;
+}
 
 /* ============================================================
    SIDEBAR
