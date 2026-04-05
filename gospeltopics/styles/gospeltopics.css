@@ -294,6 +294,20 @@ body.dark .nav-section a.active
     z-index: 1;
 }
 
+/* Disable sidebar image in dark mode */
+body.dark .sidebar
+{
+    background-image: none;
+    background-color: #2a2a2a;
+    /* matches your dark sidebar color */
+}
+
+body.dark .sidebar::before
+{
+    background: none;
+    /* remove the light overlay */
+}
+
 /* ============================================================
    CONTENT AREA
 ============================================================ */
