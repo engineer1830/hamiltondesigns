@@ -73,6 +73,27 @@ body.dark .top-header .home-link
     transform: scale(1.3);
 }
 
+/* ========================= */
+/*   DARK MODE LINK COLORS   */
+/* ========================= */
+
+body.dark a,
+body.dark a:link,
+body.dark a:visited
+{
+    color: #e6e6e6;
+    /* soft white */
+    text-decoration: none;
+}
+
+body.dark a:hover,
+body.dark a:focus
+{
+    color: #ffffff;
+    /* brighter on hover */
+    text-decoration: underline;
+}
+
 /* ============================================================
    LAYOUT
 ============================================================ */
