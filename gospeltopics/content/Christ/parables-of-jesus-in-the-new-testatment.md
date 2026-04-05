@@ -1,4 +1,4 @@
-# Parables of Jesus in the New Testament - web
+# Parables of Jesus in the New Testament
 
 Based upon 2019 Reading
 
