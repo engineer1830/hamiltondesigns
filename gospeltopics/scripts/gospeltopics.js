@@ -178,11 +178,13 @@ function buildCards(filteredWritings) {
 
     cardGrid.innerHTML = "";
 
+    // 🔤 Sort alphabetically by title
+    filteredWritings.sort((a, b) => a.title.localeCompare(b.title));
+
     filteredWritings.forEach(item => {
         const card = document.createElement("article");
         card.classList.add("card");
 
-        // Entire card is now a clickable link
         card.innerHTML = `
             <a href="/hamiltondesigns/gospeltopics/${item.url}" class="card-link">
                 <h3>${item.title}</h3>
@@ -195,6 +197,7 @@ function buildCards(filteredWritings) {
         cardGrid.appendChild(card);
     });
 }
+
 
 
 /* ============================================================
