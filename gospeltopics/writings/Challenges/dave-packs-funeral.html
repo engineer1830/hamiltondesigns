@@ -2,35 +2,71 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dave Pack’s Funeral</title>
-    <link rel="stylesheet" href="../../styles.css" />
-    <script src="../../scripts/markdown-converter.js" defer></script>
-    <script src="../../scripts/dark-mode.js" defer></script>
-    <script src="../../scripts/sidebar.js" defer></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../../styles/gospeltopics.css">
 </head>
 
-<body>
-    <header>
-        <button id="menu-toggle" aria-label="Toggle Menu">☰</button>
-        <h1>Dave Pack’s Funeral</h1>
-        <button id="dark-mode-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<body class="writing-page">
+
+    <!-- ========================= -->
+    <!--        TOP HEADER         -->
+    <!-- ========================= -->
+    <header class="top-header">
+        <a href="/hamiltondesigns/gospeltopics/" class="home-link">← Back to Home</a>
+
+        <label class="dark-toggle">
+            <input type="checkbox" id="darkModeToggle">
+            <span>Dark Mode</span>
+        </label>
     </header>
 
-    <div id="container">
-        <nav id="sidebar">
-            <ul id="sidebar-links">
-                <!-- Sidebar links auto-populated by sidebar.js -->
-            </ul>
-        </nav>
+    <!-- ========================= -->
+    <!--        PAGE LAYOUT        -->
+    <!-- ========================= -->
+    <div class="layout">
 
-        <main id="content">
-            <article id="markdown-content" data-markdown="../../content/Challenges/dave-packs-funeral.md">
-                <!-- Markdown content loads here -->
-            </article>
+        <!-- ========================= -->
+        <!--          SIDEBAR          -->
+        <!-- ========================= -->
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <h1>Writings</h1>
+                <input type="search" id="searchInput" placeholder="Search…" aria-label="Search writings">
+                <button id="collapseAllBtn" class="collapse-all">Collapse All</button>
+            </header>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- JS populates this -->
+            </nav>
+        </aside>
+
+        <!-- ========================= -->
+        <!--        MAIN CONTENT       -->
+        <!-- ========================= -->
+        <main class="content">
+
+            <!-- Markdown content loads here -->
+            <article id="markdownContent" data-markdown="../../content/Challenges/dave-packs-funeral.md"></article>
+
+            <!-- Related writings -->
+            <section class="related">
+                <h2>Related Writings</h2>
+                <div id="relatedWritings"></div>
+            </section>
+
         </main>
+
     </div>
+
+    <!-- ========================= -->
+    <!--        JAVASCRIPT         -->
+    <!-- ========================= -->
+    <script src="/hamiltondesigns/gospeltopics/scripts/gospeltopics.js"></script>
+
 </body>
 
 </html>
