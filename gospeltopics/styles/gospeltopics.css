@@ -138,6 +138,12 @@ body.dark a:focus
     /* soft white for readability */
 }
 
+/* Restore card title color (homepage cards) */
+.card h2
+{
+    color: #000;
+}
+
 /* Disable hero image + overlay in dark mode */
 body.dark .layout
 {
