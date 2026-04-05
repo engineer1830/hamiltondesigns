@@ -94,8 +94,8 @@ body.dark a:focus
     text-decoration: underline;
 }
 
-/* ============================================================
-   LAYOUT
+//* ============================================================
+LAYOUT
 ============================================================ */
 
 /* Hero background image (light mode only) */
@@ -140,18 +140,6 @@ body.dark a:focus
 .card h3
 {
     color: #000;
-}
-
-/* Restore related-writing link color */
-.content .related #relatedWritings a
-{
-    color: #000 !important;
-}
-
-/* Dark mode related-writing links */
-body.dark .content .related #relatedWritings a
-{
-    color: #ccc !important;
 }
 
 /* Restore sidebar category color */
@@ -619,4 +607,14 @@ a:focus
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 3px;
+}
+/* Related writings override — must be last */
+.related #relatedWritings a
+{
+    color: #000 !important;
+}
+
+body.dark .related #relatedWritings a
+{
+    color: #ccc !important;
 }
