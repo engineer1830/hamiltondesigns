@@ -1,4 +1,4 @@
-# Parenting Advise From the Scriptures
+# Parenting Advice From the Scriptures
 
 I wonder if [Eli] has fallen into the trap of thinking, “Well, you know, they have their agency.”
 

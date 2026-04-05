@@ -307,5 +307,19 @@
             "scriptures",
             "discipline"
         ]
+    },
+    {
+        "title": "Atonement",
+        "category": "Christ",
+        "url": "writings/Christ/atonement.html",
+        "mdUrl": "content/Christ/atonement.md",
+        "keywords": [
+            "atonement",
+            "Christ",
+            "mercy",
+            "suffering",
+            "Packer",
+            "redemption"
+        ]
     }
 ]
