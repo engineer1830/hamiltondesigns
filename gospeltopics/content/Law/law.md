@@ -1,34 +1,32 @@
 # Law
 
-An essay to write.
+An essay to write
 
-My conclusion: Regardless of where we reside, we are subject to the laws that govern the sphere in which we live. The type of being we are carries those laws — and the capacity to operate under them — wherever we go.
+My conclusion: Regardless of where we reside, we are subject to the laws that governs the sphere where we are. The type of being that we are carries those laws and the capability wherever we go.
 
-## Spheres and Obedience
+* How was the Savior able to work mighty miracles? He was a celestial being in a telestial sphere that he had created.
+* By living with exact obedience to the commandments, we become terrestrial beings living in a telestial sphere and we have access to that measure of priesthood power that accompanies our obedience.
 
-- **How was the Savior able to work mighty miracles?**  
-  He was a celestial being living in a telestial sphere — a sphere He Himself created. His obedience aligned Him with celestial law, and celestial law governs all lower spheres.
+Types of law
 
-- **What happens when we live with exact obedience?**  
-  We begin to operate at a terrestrial level while still in a telestial world. Obedience grants access to the measure of priesthood power associated with the laws we choose to live.
+* Jurisprudence (criminal, civil, IP, etc.) . . . may vs shall
+* Physical laws (gravity, thermodynamics, motion, etc.)
+* Telestial laws (the 10 commandments . . . shalt, Law of Moses, etc.)
+* Terrestrial laws (Law of the Gospel . . . living above just the telestial laws because we are choosing to obey laws because we desire to become as our Savior is, etc.)
+* Celestial laws (Doctrine of Christ, temple covenants, redemption, salvation, and exaltation, charity for our fellow man, etc.)
+* Higher laws — the more obedience that we live by, the more we qualify to live the higher laws . . . celestial and whatever lies beyond. Clearly Christ was subject to higher laws as we was about to walk on water, change water to wine, heal all infirmities, and raise the dead and rise from the dead. His perfect obedience enabled his perfect power of the telestial and terrestrial laws that accompany daily life
+* Physical laws: Gravity, Laws of Thermodynamics, Conservation, Newton’s Laws of Motion,
 
-## Types of Law
+What is the law of eternity? Why is it that we struggle to grasp the scope of eternity? Is it because we are currently bound by the structures of mortality where life itself is bounded by a birth and a death, a beginning and an end?
 
-- **Jurisprudence** — criminal, civil, intellectual property; the difference between *may* and *shall*  
-- **Physical laws** — gravity, thermodynamics, motion  
-- **Telestial laws** — commandments, the Law of Moses, “thou shalt not”  
-- **Terrestrial laws** — the Law of the Gospel; choosing obedience because we desire to become like the Savior  
-- **Celestial laws** — the Doctrine of Christ, temple covenants, redemption, exaltation, charity  
-- **Higher laws** — the more obedience we live, the more we qualify to live higher laws. Christ operated under laws beyond mortality: walking on water, healing all infirmities, raising the dead, and rising from the dead.
+The song *On a Clear Day* gives us insight:
 
-## The Law of Eternity
+On a clear day; Rise and look around you; And you'll see who; You are
 
-Why do we struggle to comprehend eternity?  
-Perhaps because mortality is bounded by beginnings and endings — birth and death — and we are temporarily constrained by those structures.
+On a clear day; How it will astound you; That the glow of your being; Outshines every star
 
-The song *On a Clear Day* offers a glimpse:
+You'll feel part of; Every mountain, sea, and shore; You can hear; From far and near; A world you've never heard before
 
-> “On a clear day, rise and look around you, and you'll see who you are…  
-> On a clear day… you can see forever and ever… and evermore.”
+And on a clear day; On that clear day; You can see forever and ever; And ever; And evermore
 
-To comprehend eternity, we must rise above the limits of mortality and begin to see ourselves as eternal beings governed by eternal law.
+In order to comprehend eternity, we must

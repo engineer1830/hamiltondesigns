@@ -156,5 +156,50 @@
             "Israel",
             "obedience"
         ]
+    },
+    {
+        "title": "Visitation Studies",
+        "category": "Restoration",
+        "url": "writings/Restoration/visitation-studies.html",
+        "mdUrl": "content/Restoration/visitation-studies.md",
+        "keywords": [
+            "Restoration",
+            "visitations",
+            "Moroni",
+            "Elijah",
+            "Kirtland Temple",
+            "holy days",
+            "Jewish festivals",
+            "Passover",
+            "Rosh Hashanah",
+            "Yom Kippur",
+            "Feast of Tabernacles"
+        ]
+    },
+    {
+        "title": "Make Social Media Positive",
+        "category": "Social Media",
+        "url": "writings/Social-Media/make-social-media-positive.html",
+        "mdUrl": "content/Social-Media/make-social-media-positive.md",
+        "keywords": [
+            "social media",
+            "light",
+            "discipleship",
+            "selflessness",
+            "Christlike influence"
+        ]
+    },
+    {
+        "title": "Teaching",
+        "category": "Teaching",
+        "url": "writings/Teaching/teaching.html",
+        "mdUrl": "content/Teaching/teaching.md",
+        "keywords": [
+            "teaching",
+            "instruction",
+            "principles",
+            "Romney",
+            "Packer"
+        ]
     }
 ]
