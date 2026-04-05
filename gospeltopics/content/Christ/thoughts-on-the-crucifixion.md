@@ -1,4 +1,4 @@
-# Crucifixion - Thoughts
+# Thoughts on the Crucifixion
 
 From Jenny
 

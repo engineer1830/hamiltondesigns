@@ -31,7 +31,7 @@
     },
     {
         "category": "Casual-celestial",
-        "title": "Discipleship",
+        "title": "Discipleship-2",
         "url": "writings/Casual-celestial/discipleship.html",
         "mdUrl": "content/Casual-celestial/discipleship.md",
         "keywords": [
@@ -384,7 +384,7 @@
         ]
     },
     {
-        "title": "Thoughts on the Crucifixion",
+        "title": "Crucifixion - Thoughts",
         "category": "Christ",
         "url": "writings/Christ/thoughts-on-the-crucifixion.html",
         "mdUrl": "content/Christ/thoughts-on-the-crucifixion.md",
@@ -399,7 +399,7 @@
         ]
     },
     {
-        "title": "Discipleship",
+        "title": "Discipleship-1",
         "category": "Christ",
         "url": "writings/Christ/discipleship.html",
         "mdUrl": "content/Christ/discipleship.md",
