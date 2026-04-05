@@ -126,6 +126,10 @@ body.dark .layout::before
 {
     background: none;
 }
+.card h3
+{
+    color: #000;
+}
 
 /* ============================================================
    SIDEBAR (NO BACKGROUND IMAGE)
@@ -173,6 +177,15 @@ body.dark .sidebar
     width: 100%;
     border: 1px solid #ccc;
     border-radius: 6px;
+}
+.sidebar h1
+{
+    color: #000;
+}
+
+.sidebar-nav li a
+{
+    color: #444;
 }
 
 body.dark .sidebar-header input[type="search"]
