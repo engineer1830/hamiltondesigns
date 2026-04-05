@@ -321,5 +321,20 @@
             "Packer",
             "redemption"
         ]
+    },
+    {
+        "title": "Charity",
+        "category": "Christ",
+        "url": "writings/Christ/charity.html",
+        "mdUrl": "content/Christ/charity.md",
+        "keywords": [
+            "charity",
+            "pure love of Christ",
+            "atonement",
+            "boundaries",
+            "justice",
+            "mercy",
+            "scriptures"
+        ]
     }
 ]
