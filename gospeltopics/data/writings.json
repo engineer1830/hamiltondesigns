@@ -13,5 +13,20 @@
             "godhead",
             "book of mormon"
         ]
+    },
+    {
+        "category": "Discipline",
+        "title": "Anger",
+        "url": "writings/Anger/anger.html",
+        "mdUrl": "content/Anger/anger.md",
+        "keywords": [
+            "anger",
+            "moroni",
+            "amalickiah",
+            "alma 46",
+            "alma 48",
+            "righteous anger",
+            "scripture study"
+        ]
     }
 ]
