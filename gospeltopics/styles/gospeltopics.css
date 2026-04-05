@@ -104,6 +104,14 @@ body.dark .top-header .home-link
     z-index: 0;
 }
 
+/* Disable hero image in dark mode */
+body.dark .layout
+{
+    background-image: none;
+    background-color: #1e1e1e;
+    /* matches your dark body background */
+}
+
 /* ============================================================
    SIDEBAR
 ============================================================ */
