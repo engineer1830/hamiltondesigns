@@ -131,6 +131,9 @@ LAYOUT
 .layout h2,
 .layout h3,
 .layout p,
+.layout ul,
+.layout ol,
+.layout li,
 .layout .home-link
 {
     color: #f5f5f5;
