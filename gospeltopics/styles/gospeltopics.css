@@ -130,6 +130,10 @@ body.dark .layout::before
 {
     color: #000;
 }
+.sidebar .nav-category
+{
+    color: #000 !important;
+}
 
 /* ============================================================
    SIDEBAR (NO BACKGROUND IMAGE)
