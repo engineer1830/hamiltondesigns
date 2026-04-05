@@ -225,6 +225,7 @@ body.dark .sidebar::before
     background: none;
 }
 
+/* Sidebar header */
 .sidebar-header
 {
     display: flex;
@@ -279,19 +280,39 @@ body.dark .sidebar-header input[type="search"]
     cursor: pointer;
 }
 
-body.dark .nav-category
-{
-    color: #ddd;
-}
-
 .nav-category:hover
 {
     background: rgba(0, 0, 0, 0.05);
 }
 
+/* Dark mode category headers */
+body.dark .nav-category
+{
+    color: #ddd;
+}
+
 body.dark .nav-category:hover
 {
     background: rgba(255, 255, 255, 0.1);
+}
+
+/* Sidebar topic links (inside each category) */
+.sidebar-nav li a
+{
+    display: block;
+    padding-left: 14px;
+    /* indentation for hierarchy */
+    color: #444;
+    /* softer than black for light mode */
+    font-weight: 400;
+    /* lighter than category headings */
+}
+
+/* Dark mode topic links */
+body.dark .sidebar-nav li a
+{
+    color: #ccc;
+    /* softer than white for dark mode */
 }
 
 /* Collapsible lists */
@@ -312,18 +333,13 @@ body.dark .nav-category:hover
     margin: 0.35rem 0;
 }
 
+/* Topic link hover + active states */
 .nav-section a
 {
     text-decoration: none;
-    color: #333;
     padding: 0.25rem 0;
     display: block;
     border-radius: 4px;
-}
-
-body.dark .nav-section a
-{
-    color: #ddd;
 }
 
 .nav-section a:hover,
