@@ -261,6 +261,10 @@ body.dark .nav-section a.active
     background: #444;
     color: #9bbcff;
 }
+.sidebar-nav ul.collapsed
+{
+    display: none;
+}
 
 /* ============================================================
    CONTENT AREA
