@@ -122,7 +122,6 @@ body.dark a:focus
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.35);
-    /* adjust opacity here */
     pointer-events: none;
     z-index: 0;
 }
@@ -135,7 +134,6 @@ body.dark a:focus
 .layout .home-link
 {
     color: #f5f5f5;
-    /* soft white for readability */
 }
 
 /* Restore card title color (homepage cards) */
@@ -143,16 +141,17 @@ body.dark a:focus
 {
     color: #000;
 }
+
 /* Restore related-writing link color */
-#relatedWritings a
+.related a
 {
-    color: #000;
+    color: #000 !important;
 }
 
 /* Dark mode related-writing links */
-body.dark #relatedWritings a
+body.dark .related a
 {
-    color: #ccc;
+    color: #ccc !important;
 }
 
 /* Restore sidebar category color */
@@ -160,6 +159,7 @@ body.dark #relatedWritings a
 {
     color: #000;
 }
+
 /* Restore sidebar main title color */
 .sidebar h1
 {
@@ -176,17 +176,6 @@ body.dark .layout
 body.dark .layout::before
 {
     background: none;
-}
-/* Restore related-writing link color */
-.related a
-{
-    color: #000;
-}
-
-/* Dark mode related-writing links */
-body.dark .related a
-{
-    color: #ccc;
 }
 
 /* ============================================================
