@@ -127,6 +127,17 @@ body.dark a:focus
     z-index: 0;
 }
 
+/* Lighten text when hero overlay is dark */
+.layout h1,
+.layout h2,
+.layout h3,
+.layout p,
+.layout .home-link
+{
+    color: #f5f5f5;
+    /* soft white for readability */
+}
+
 /* Disable hero image + overlay in dark mode */
 body.dark .layout
 {
