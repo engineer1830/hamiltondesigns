@@ -544,3 +544,23 @@ body:not(.dark) a:focus
 {
     text-decoration: underline;
 }
+/* ============================================
+   LINK EMPHASIS (applies to scripture links too)
+=============================================== */
+
+/* Base link style (light + dark mode) */
+a
+{
+    font-weight: 600;
+    /* semi-bold */
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+/* Hover effect */
+a:hover,
+a:focus
+{
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+}
