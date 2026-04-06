@@ -49,7 +49,8 @@ async function loadWritings() {
 ============================================================ */
 function buildSidebar() {
     const nav = document.getElementById("sidebarNav");
-    if (!nav) return;
+    if (!nav) return;  // <-- This now protects the entire function
+
     nav.innerHTML = "";
 
     const categories = {};
@@ -94,7 +95,6 @@ function buildSidebar() {
             const li = document.createElement("li");
             const link = document.createElement("a");
 
-            // Absolute path so links work from ANY page
             link.href = "/hamiltondesigns/gospeltopics/" + item.url;
             link.textContent = item.title;
 
@@ -113,7 +113,6 @@ function buildSidebar() {
     const lists = nav.querySelectorAll("ul");
     lists.forEach(list => list.classList.add("collapsed"));
 }
-
 
 /* ============================================================
    ACTIVE LINK HIGHLIGHTING
