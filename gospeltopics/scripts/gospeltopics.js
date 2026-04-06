@@ -115,6 +115,34 @@ function buildSidebar() {
 }
 
 /* ============================================================
+   COLLAPSE / EXPAND ALL BUTTON
+============================================================ */
+function enableSidebarCollapsing() {
+    const collapseBtn = document.getElementById("collapseAllBtn");
+    if (!collapseBtn) return;
+
+    collapseBtn.addEventListener("click", () => {
+        const lists = document.querySelectorAll("#sidebarNav ul");
+        const allCollapsed = [...lists].every(list =>
+            list.classList.contains("collapsed")
+        );
+
+        lists.forEach(list => {
+            if (allCollapsed) {
+                list.classList.remove("collapsed"); // expand all
+            } else {
+                list.classList.add("collapsed"); // collapse all
+            }
+        });
+
+        collapseBtn.textContent = allCollapsed
+            ? "Collapse All"
+            : "Expand All";
+    });
+}
+
+
+/* ============================================================
    ACTIVE LINK HIGHLIGHTING
 ============================================================ */
 function highlightActiveLink() {
