@@ -134,14 +134,6 @@ function highlightActiveLink() {
     });
 }
 
-
-/* ============================================================
-   INITIALIZE SIDEBAR
-============================================================ */
-buildSidebar();
-enableSidebarCollapsing();
-highlightActiveLink();
-
 /* ============================================================
    SIDEBAR SEARCH (with fuzzy matching)
 ============================================================ */
