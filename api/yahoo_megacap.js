@@ -1,11 +1,10 @@
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
 
-    const primaryUrl = "https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved/most_actives";
-    const fallbackUrl = "https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved/day_gainers";
+    const url = "https://query2.finance.yahoo.com/v1/finance/trending/US";
 
     try {
-        const response = await fetch(primaryUrl, {
+        const response = await fetch(url, {
             headers: {
                 "User-Agent": "Mozilla/5.0",
                 "Accept": "application/json",
@@ -14,33 +13,17 @@ export default async function handler(req, res) {
             }
         });
 
-        if (response.status === 502 || response.status === 403) {
-            console.warn("Yahoo primary screener blocked — switching to fallback.");
-
-            const fallback = await fetch(fallbackUrl, {
-                headers: {
-                    "User-Agent": "Mozilla/5.0",
-                    "Accept": "application/json"
-                }
-            });
-
-            const data = await fallback.json();
-            return res.status(200).json(data);
-        }
-
         if (!response.ok) {
-            throw new Error("Yahoo returned " + response.status);
+            console.error("Yahoo returned status:", response.status);
+            return res.status(500).json({ error: "Yahoo returned " + response.status });
         }
 
         const data = await response.json();
         return res.status(200).json(data);
 
     } catch (err) {
-        console.error("MegaCap Proxy Error:", err);
-        return res.status(500).json({ error: "Failed to fetch mega cap tickers" });
+        console.error("Trending Proxy Error:", err);
+        return res.status(500).json({ error: "Failed to fetch trending tickers" });
     }
 }
-
-
-
 
