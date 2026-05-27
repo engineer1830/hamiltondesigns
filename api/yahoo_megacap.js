@@ -1,8 +1,8 @@
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
 
-    const primaryUrl = "https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved/mega_cap_stocks";
-    const fallbackUrl = "https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved/most_actives";
+    const primaryUrl = "https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved/most_actives";
+    const fallbackUrl = "https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved/day_gainers";
 
     try {
         const response = await fetch(primaryUrl, {
@@ -14,15 +14,16 @@ export default async function handler(req, res) {
             }
         });
 
-        // ✅ If Yahoo returns 502, automatically retry with fallback
-        if (response.status === 502) {
-            console.warn("Yahoo mega_cap returned 502 — switching to fallback screener.");
+        if (response.status === 502 || response.status === 403) {
+            console.warn("Yahoo primary screener blocked — switching to fallback.");
+
             const fallback = await fetch(fallbackUrl, {
                 headers: {
                     "User-Agent": "Mozilla/5.0",
                     "Accept": "application/json"
                 }
             });
+
             const data = await fallback.json();
             return res.status(200).json(data);
         }
@@ -39,6 +40,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch mega cap tickers" });
     }
 }
+
 
 
 
