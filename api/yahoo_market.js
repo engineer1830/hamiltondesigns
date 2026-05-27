@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        // ⭐ Manually read the raw body (Vercel does NOT parse JSON automatically)
+        // Manually reading the raw body (Vercel does NOT parse JSON automatically)
         const buffers = [];
         for await (const chunk of req) {
             buffers.push(chunk);
