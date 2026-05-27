@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-    // --- CORS ---
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -9,7 +8,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Parse JSON body manually
+        // ⭐ Manually read the raw body (Vercel does NOT parse JSON automatically)
         const buffers = [];
         for await (const chunk of req) {
             buffers.push(chunk);
@@ -27,7 +26,6 @@ export default async function handler(req, res) {
         });
 
         const data = await response.json();
-
         return res.status(200).json(data);
 
     } catch (err) {
@@ -35,4 +33,5 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Internal server error" });
     }
 }
+
 
