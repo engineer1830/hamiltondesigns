@@ -6,8 +6,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    // This endpoint returns marketCap + sharesOutstanding reliably
-    const url = `https://query2.finance.yahoo.com/v11/finance/quoteSummary/${ticker}?modules=price,summaryDetail,defaultKeyStatistics`;
+    const url = `https://query2.finance.yahoo.com/v6/finance/quote?symbols=${ticker}`;
 
     try {
         const response = await fetch(url, {
@@ -18,24 +17,18 @@ export default async function handler(req, res) {
         });
 
         const data = await response.json();
-        const result = data.quoteSummary?.result?.[0];
+        const q = data.quoteResponse?.result?.[0];
 
-        if (!result) {
+        if (!q) {
             return res.status(200).json({ error: "No data" });
         }
 
-        const price = result.price || {};
-        const stats = result.defaultKeyStatistics || {};
-        const summary = result.summaryDetail || {};
-
         return res.status(200).json({
-            symbol: price.symbol || ticker,
-            name: price.longName || price.shortName || ticker,
-            regularMarketPrice: price.regularMarketPrice?.raw || 0,
-            marketCap: price.marketCap?.raw ||
-                summary.marketCap?.raw ||
-                null,
-            sharesOutstanding: stats.sharesOutstanding?.raw || null
+            symbol: q.symbol,
+            name: q.longName || q.shortName || q.symbol,
+            regularMarketPrice: q.regularMarketPrice || 0,
+            marketCap: q.marketCap || null,
+            sharesOutstanding: q.sharesOutstanding || null
         });
 
     } catch (err) {
@@ -43,6 +36,6 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch quote data" });
     }
 }
-
   
+
   
