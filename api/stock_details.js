@@ -2,13 +2,18 @@ import fundamentals from "../../data/fundamentals.json";
 
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    if (req.method === "OPTIONS") {
+        return res.status(200).end();
+    }
 
     const ticker = req.query.ticker?.toUpperCase();
     if (!ticker) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    // Yahoo price (live)
     const yahooUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
 
     try {
@@ -19,7 +24,6 @@ export default async function handler(req, res) {
         const yahooResult = yahooData.chart?.result?.[0];
         const price = yahooResult?.meta?.regularMarketPrice || 0;
 
-        // Fundamentals from JSON file
         const f = fundamentals[ticker] || {
             name: ticker,
             marketCap: 0,
@@ -44,4 +48,5 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
+
   
