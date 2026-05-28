@@ -6,7 +6,9 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    const url = `https://query2.finance.yahoo.com/v1/finance/search?q=${ticker}`;
+    const url =
+        `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${ticker}` +
+        `?modules=assetProfile`;
 
     try {
         const response = await fetch(url, {
@@ -23,23 +25,22 @@ export default async function handler(req, res) {
         }
 
         const data = await response.json();
+        const profile = data.quoteSummary?.result?.[0]?.assetProfile;
 
-        const match = data.quotes?.find(q => q.symbol === ticker);
-
-        if (!match) {
+        if (!profile) {
             return res.status(200).json({
                 symbol: ticker,
                 name: ticker,
-                sector: null,
-                industry: null
+                sector: "Unknown",
+                industry: "Unknown"
             });
         }
 
         return res.status(200).json({
-            symbol: match.symbol,
-            name: match.shortname || match.longname || ticker,
-            sector: match.sector || null,
-            industry: match.industry || null
+            symbol: ticker,
+            name: profile.longBusinessSummary ? ticker : ticker,
+            sector: profile.sector || "Unknown",
+            industry: profile.industry || "Unknown"
         });
 
     } catch (err) {
@@ -47,4 +48,5 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch sector data" });
     }
 }
+  
   
