@@ -1,39 +1,53 @@
-import fs from "fs";
-import path from "path";
-import fetch from "node-fetch";
+const fs = require("fs");
+const path = require("path");
 
-const ALPHA_KEY = process.env.ALPHA_KEY;
+// Node 26-compatible fetch wrapper
+const fetch = (...args) =>
+    import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
-// Load tickers.json manually (works in all Node versions)
 const tickersPath = path.join("data", "tickers.json");
 const tickers = JSON.parse(fs.readFileSync(tickersPath, "utf8"));
 
-async function fetchFundamentals(ticker) {
-    const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${ALPHA_KEY}`;
-    const res = await fetch(url);
-    const data = await res.json();
+async function fetchNasdaqFundamentals(ticker) {
+    const url = `https://api.nasdaq.com/api/company/${ticker}/info?assetclass=stocks`;
 
-    if (!data || !data.MarketCapitalization) {
+    const res = await fetch(url, {
+        headers: {
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json",
+            "Origin": "https://www.nasdaq.com",
+            "Referer": "https://www.nasdaq.com/"
+        }
+    });
+
+    const json = await res.json();
+
+    const d = json?.data;
+
+    if (!d || !d.companyName) {
         console.log(`⚠️  No data for ${ticker}`);
         return null;
     }
 
     return {
-        name: data.Name || ticker,
-        marketCap: Number(data.MarketCapitalization),
-        sharesOutstanding: Number(data.SharesOutstanding)
+        name: d.companyName,
+        marketCap: d.marketCap || null,
+        sharesOutstanding: d.sharesOutstanding || null,
+        sector: d.sector || null,
+        industry: d.industry || null
     };
 }
 
 async function run() {
     const output = {};
+
     for (const ticker of tickers) {
         console.log(`Fetching ${ticker}...`);
-        const fundamentals = await fetchFundamentals(ticker);
+        const fundamentals = await fetchNasdaqFundamentals(ticker);
         if (fundamentals) {
             output[ticker] = fundamentals;
         }
-        await new Promise(r => setTimeout(r, 12000)); // avoid rate limit
+        await new Promise(r => setTimeout(r, 300)); // gentle pacing
     }
 
     const filePath = path.join("data", "fundamentals.json");
@@ -42,4 +56,3 @@ async function run() {
 }
 
 run();
-
