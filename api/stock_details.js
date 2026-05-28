@@ -21,7 +21,8 @@ export default async function handler(req, res) {
             headers: { "User-Agent": "Mozilla/5.0" }
         });
         const yahooData = await yahooRes.json();
-        const yahooResult = yahooData.chart?.result?.[0];
+
+        const yahooResult = yahooData.chart?.result?.[0] || null;
         const price = yahooResult?.meta?.regularMarketPrice || 0;
 
         const f = fundamentals[ticker] || {
@@ -45,6 +46,11 @@ export default async function handler(req, res) {
 
     } catch (err) {
         console.error("Stock details error:", err);
+
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
