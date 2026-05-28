@@ -1,24 +1,34 @@
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
 
-    const { ticker } = req.query;
-
+    const ticker = req.query.ticker;
     if (!ticker) {
-        return res.status(400).json({ error: "Ticker required" });
+        return res.status(400).json({ error: "Ticker is required" });
     }
 
-    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=assetProfile,price`;
+    const url =
+        `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${ticker}` +
+        `?modules=price,assetProfile`;
 
     try {
         const response = await fetch(url, {
-            headers: { "User-Agent": "Mozilla/5.0" }
+            headers: {
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/json"
+            }
         });
 
+        if (!response.ok) {
+            console.error("Yahoo returned:", response.status);
+            return res.status(500).json({ error: "Yahoo returned " + response.status });
+        }
+
         const data = await response.json();
-        res.status(200).json(data);
+        return res.status(200).json(data);
 
     } catch (err) {
-        res.status(500).json({ error: "Failed to fetch quote summary" });
+        console.error("Quote Proxy Error:", err);
+        return res.status(500).json({ error: "Failed to fetch quote data" });
     }
 }
-
+  
