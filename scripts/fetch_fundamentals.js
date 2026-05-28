@@ -4,7 +4,9 @@ import fetch from "node-fetch";
 
 const ALPHA_KEY = process.env.ALPHA_KEY;
 
-import tickers from "../data/tickers.json" assert { type: "json" };
+// Load tickers.json manually (works in all Node versions)
+const tickersPath = path.join("data", "tickers.json");
+const tickers = JSON.parse(fs.readFileSync(tickersPath, "utf8"));
 
 async function fetchFundamentals(ticker) {
     const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${ALPHA_KEY}`;
@@ -31,7 +33,7 @@ async function run() {
         if (fundamentals) {
             output[ticker] = fundamentals;
         }
-        await new Promise(r => setTimeout(r, 12000));
+        await new Promise(r => setTimeout(r, 12000)); // avoid rate limit
     }
 
     const filePath = path.join("data", "fundamentals.json");
@@ -40,3 +42,4 @@ async function run() {
 }
 
 run();
+
