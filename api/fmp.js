@@ -6,7 +6,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    const url = `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=demo`;
+    const url = `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=VwldoLUq23b1iHTZJIGNOIUpx0m2CCv7`;
 
     try {
         const response = await fetch(url);
