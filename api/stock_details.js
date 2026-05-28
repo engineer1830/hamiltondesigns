@@ -1,4 +1,4 @@
-import fundamentals from "../../data/fundamentals.json";
+import fundamentals from "../data/fundamentals.json";
 
 export default async function handler(req, res) {
     // --- CORS ---
