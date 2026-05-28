@@ -46,47 +46,81 @@
 //     }
 // }
 
+// Simple in-memory cache (persists for the lifetime of the serverless instance)
+let fundamentalsCache = {};
+
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
 
-    const ticker = req.query.ticker;
+    const ticker = req.query.ticker?.toUpperCase();
     if (!ticker) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    const priceUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
-    const statsUrl = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=price,defaultKeyStatistics`;
+    const ALPHA_KEY = process.env.ALPHA_KEY;
+
+    // Yahoo price endpoint (always works)
+    const yahooUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+
+    // Alpha Vantage fundamentals (rate-limited, so we cache)
+    const alphaUrl = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${ALPHA_KEY}`;
 
     try {
-        const [priceRes, statsRes] = await Promise.all([
-            fetch(priceUrl, { headers: { "User-Agent": "Mozilla/5.0" } }),
-            fetch(statsUrl, { headers: { "User-Agent": "Mozilla/5.0" } })
-        ]);
+        // --- 1. PRICE FROM YAHOO ---
+        const yahooRes = await fetch(yahooUrl, {
+            headers: { "User-Agent": "Mozilla/5.0" }
+        });
+        const yahooData = await yahooRes.json();
+        const yahooResult = yahooData.chart?.result?.[0];
+        const price = yahooResult?.meta?.regularMarketPrice || 0;
 
-        const priceData = await priceRes.json();
-        const statsData = await statsRes.json();
+        // --- 2. FUNDAMENTALS FROM CACHE OR ALPHA ---
+        let fundamentals = fundamentalsCache[ticker];
 
-        const priceResult = priceData.chart?.result?.[0];
-        const statsResult = statsData.quoteSummary?.result?.[0];
+        if (!fundamentals) {
+            // Fetch from Alpha Vantage only if not cached
+            const alphaRes = await fetch(alphaUrl);
+            const alphaData = await alphaRes.json();
 
-        const price = priceResult?.meta?.regularMarketPrice || 0;
-        const name = statsResult?.price?.longName || ticker;
-        const marketCap = statsResult?.defaultKeyStatistics?.marketCap?.raw || 0;
-        const sharesOutstanding = statsResult?.defaultKeyStatistics?.sharesOutstanding?.raw || 0;
+            // If Alpha returns valid fundamentals, store them
+            if (alphaData && alphaData.MarketCapitalization) {
+                fundamentals = {
+                    name: alphaData.Name || ticker,
+                    marketCap: Number(alphaData.MarketCapitalization) || 0,
+                    sharesOutstanding: Number(alphaData.SharesOutstanding) || 0
+                };
 
+                // Save to cache
+                fundamentalsCache[ticker] = fundamentals;
+            } else {
+                // If Alpha fails (rate limit), fallback to empty fundamentals
+                fundamentals = {
+                    name: ticker,
+                    marketCap: 0,
+                    sharesOutstanding: 0
+                };
+            }
+        }
+
+        // --- 3. COMPUTE FALLBACK MARKET CAP ---
+        const computedCap =
+            price && fundamentals.sharesOutstanding
+                ? price * fundamentals.sharesOutstanding
+                : fundamentals.marketCap;
+
+        // --- 4. RETURN MERGED RESULT ---
         return res.status(200).json({
             symbol: ticker,
-            name,
+            name: fundamentals.name,
             regularMarketPrice: price,
-            marketCap,
-            sharesOutstanding
+            marketCap: computedCap || 0,
+            sharesOutstanding: fundamentals.sharesOutstanding || 0
         });
 
     } catch (err) {
-        console.error("Yahoo stock details error:", err);
+        console.error("Stock details error:", err);
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
-  
-  
+
   
