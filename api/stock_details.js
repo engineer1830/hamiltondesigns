@@ -54,35 +54,39 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    const url = `https://query2.finance.yahoo.com/v1/finance/search?q=${ticker}`;
+    const priceUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+    const statsUrl = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=price,defaultKeyStatistics`;
 
     try {
-        const response = await fetch(url, {
-            headers: {
-                "User-Agent": "Mozilla/5.0",
-                "Accept": "application/json"
-            }
-        });
+        const [priceRes, statsRes] = await Promise.all([
+            fetch(priceUrl, { headers: { "User-Agent": "Mozilla/5.0" } }),
+            fetch(statsUrl, { headers: { "User-Agent": "Mozilla/5.0" } })
+        ]);
 
-        const data = await response.json();
-        const q = data.quotes?.[0];
+        const priceData = await priceRes.json();
+        const statsData = await statsRes.json();
 
-        if (!q) {
-            return res.status(200).json({ error: "No data" });
-        }
+        const priceResult = priceData.chart?.result?.[0];
+        const statsResult = statsData.quoteSummary?.result?.[0];
+
+        const price = priceResult?.meta?.regularMarketPrice || 0;
+        const name = statsResult?.price?.longName || ticker;
+        const marketCap = statsResult?.defaultKeyStatistics?.marketCap?.raw || 0;
+        const sharesOutstanding = statsResult?.defaultKeyStatistics?.sharesOutstanding?.raw || 0;
 
         return res.status(200).json({
-            symbol: q.symbol,
-            name: q.longname || q.shortname || q.symbol,
-            regularMarketPrice: q.regularMarketPrice || 0,
-            marketCap: q.marketCap || 0,
-            sharesOutstanding: q.sharesOutstanding || null
+            symbol: ticker,
+            name,
+            regularMarketPrice: price,
+            marketCap,
+            sharesOutstanding
         });
 
     } catch (err) {
-        console.error("Yahoo search error:", err);
+        console.error("Yahoo stock details error:", err);
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
+  
   
   
