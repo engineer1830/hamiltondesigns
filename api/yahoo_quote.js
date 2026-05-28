@@ -25,6 +25,7 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
+        // Yahoo sometimes returns empty result arrays
         if (!data.quoteSummary || !data.quoteSummary.result) {
             console.warn("Yahoo returned empty quoteSummary for", ticker);
             return res.status(200).json({
