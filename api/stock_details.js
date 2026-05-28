@@ -1,6 +1,7 @@
 import fundamentals from "../../data/fundamentals.json";
 
 export default async function handler(req, res) {
+    // --- CORS ---
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -8,6 +9,7 @@ export default async function handler(req, res) {
     if (req.method === "OPTIONS") {
         return res.status(200).end();
     }
+    // -------------
 
     const ticker = req.query.ticker?.toUpperCase();
     if (!ticker) {
@@ -20,11 +22,14 @@ export default async function handler(req, res) {
         const yahooRes = await fetch(yahooUrl, {
             headers: { "User-Agent": "Mozilla/5.0" }
         });
+
         const yahooData = await yahooRes.json();
 
-        const yahooResult = yahooData.chart?.result?.[0] || null;
-        const price = yahooResult?.meta?.regularMarketPrice || 0;
+        // If Yahoo returns null, avoid crashing
+        const yahooResult = yahooData?.chart?.result?.[0];
+        const price = yahooResult?.meta?.regularMarketPrice ?? 0;
 
+        // Fundamentals
         const f = fundamentals[ticker] || {
             name: ticker,
             marketCap: 0,
@@ -47,6 +52,7 @@ export default async function handler(req, res) {
     } catch (err) {
         console.error("Stock details error:", err);
 
+        // --- CORS on error ---
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
         res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -54,5 +60,6 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
+
 
   
