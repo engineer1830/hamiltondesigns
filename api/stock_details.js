@@ -1,6 +1,6 @@
 import fundamentals from "../data/fundamentals.json";
 
-// This API pulls from yahoo finance quote API and chart API for various elements of the data using the free API data
+// This API pulls from yahoo finance spark API
 
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -16,16 +16,16 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    const chartUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=5d`;
-    const quoteUrl = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`;
+    // ⭐ Spark API — best for daily movement
+    const sparkUrl = `https://query2.finance.yahoo.com/v7/finance/spark?symbols=${ticker}&range=5d&interval=1d`;
 
     try {
-        // ⭐ Fetch chart data (always works)
-        const chartRes = await fetch(chartUrl, {
+        const sparkRes = await fetch(sparkUrl, {
             headers: { "User-Agent": "Mozilla/5.0" }
         });
-        const chartData = await chartRes.json();
-        const chart = chartData?.chart?.result?.[0];
+
+        const sparkData = await sparkRes.json();
+        const spark = sparkData?.spark?.result?.[0]?.response?.[0];
 
         // ⭐ Fundamentals fallback
         const f = fundamentals[ticker] || {
@@ -35,8 +35,8 @@ export default async function handler(req, res) {
             changePercent: 0
         };
 
-        // ⭐ If chart fails entirely
-        if (!chart) {
+        // ⭐ If Spark API fails entirely
+        if (!spark) {
             return res.status(200).json({
                 symbol: ticker,
                 name: f.name,
@@ -48,41 +48,22 @@ export default async function handler(req, res) {
         }
 
         // ⭐ Extract price
-        const price = chart.meta?.regularMarketPrice ?? 0;
+        const price = spark.meta?.regularMarketPrice ?? 0;
 
-        // ⭐ Extract previous close (bulletproof)
-        let prevClose = chart.meta?.previousClose;
-        if (!prevClose) {
-            const closes = chart.indicators?.quote?.[0]?.close || [];
-            prevClose = closes.slice().reverse().find(c => c != null) ?? 0;
-        }
+        // ⭐ Extract previous close (Spark always provides this)
+        const prevClose = spark.meta?.chartPreviousClose ?? 0;
 
-        // ⭐ Compute changePercent manually
-        let changePercent =
+        // ⭐ Compute change percent
+        const changePercent =
             prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
 
         // ⭐ Compute market cap
         const shares = f.sharesOutstanding ?? 0;
-        let marketCap = price && shares ? price * shares : f.marketCap;
-
-        // ⭐ Try Quote API ONLY as a fallback (no cookies needed)
-        try {
-            const quoteRes = await fetch(quoteUrl, {
-                headers: { "User-Agent": "Mozilla/5.0" }
-            });
-            const quoteData = await quoteRes.json();
-            const quote = quoteData?.quoteResponse?.result?.[0];
-
-            if (quote?.regularMarketChangePercent != null) {
-                changePercent = quote.regularMarketChangePercent;
-            }
-        } catch (e) {
-            console.log("Quote fallback failed, using chart data only");
-        }
+        const marketCap = price && shares ? price * shares : f.marketCap;
 
         return res.status(200).json({
             symbol: ticker,
-            name: f.name,
+            name: spark.meta?.longName || f.name,
             regularMarketPrice: price,
             regularMarketChangePercent: changePercent,
             marketCap,
@@ -90,10 +71,19 @@ export default async function handler(req, res) {
         });
 
     } catch (err) {
-        console.error("Stock details error:", err);
-        return res.status(500).json({ error: "Failed to fetch stock details" });
+        console.error("Spark API error:", err);
+
+        return res.status(200).json({
+            symbol: ticker,
+            name: ticker,
+            regularMarketPrice: 0,
+            regularMarketChangePercent: 0,
+            marketCap: 0,
+            sharesOutstanding: 0
+        });
     }
 }
+
 
 
 
