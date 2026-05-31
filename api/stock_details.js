@@ -44,11 +44,9 @@ export default async function handler(req, res) {
         const price = result.meta?.regularMarketPrice ?? 0;
         const prevClose = result.meta?.previousClose ?? 0;
 
-        // ⭐ Compute change percent manually
         const changePercent =
             prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
 
-        // ⭐ Compute market cap manually
         const shares = f.sharesOutstanding ?? 0;
         const marketCap = price && shares ? price * shares : f.marketCap;
 
@@ -66,6 +64,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
+
 
 
 
