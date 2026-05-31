@@ -35,6 +35,8 @@ export default async function handler(req, res) {
         }
 
         const quoteData = await quoteRes.json();
+        console.log("QUOTE RAW:", JSON.stringify(quoteData, null, 2));
+
 
         // ⭐ Safe extraction — no crashes
         const quote = quoteData?.quoteResponse?.result?.[0];
