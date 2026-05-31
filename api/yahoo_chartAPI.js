@@ -1,3 +1,5 @@
+// This works correctly  . . . for stock data
+
 import fundamentals from "../data/fundamentals.json";
 
 export default async function handler(req, res) {
@@ -14,7 +16,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    const yahooUrl = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=price,summaryDetail`;
+    const yahooUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
 
     try {
         const yahooRes = await fetch(yahooUrl, {
@@ -22,42 +24,36 @@ export default async function handler(req, res) {
         });
 
         const yahooData = await yahooRes.json();
-        const result = yahooData?.quoteSummary?.result?.[0];
 
-        if (!result) {
-            return res.status(500).json({ error: "Invalid Yahoo response" });
-        }
-
-        const price = result.price;
-        const summary = result.summaryDetail;
+        const yahooResult = yahooData?.chart?.result?.[0];
+        const price = yahooResult?.meta?.regularMarketPrice ?? 0;
 
         const f = fundamentals[ticker] || {
             name: ticker,
-            sharesOutstanding: 0,
-            marketCap: 0
+            marketCap: 0,
+            sharesOutstanding: 0
         };
 
-        const livePrice = price.regularMarketPrice ?? 0;
-        const shares = price.sharesOutstanding ?? f.sharesOutstanding ?? 0;
-
         const computedCap =
-            livePrice && shares ? livePrice * shares : (price.marketCap || summary.marketCap || f.marketCap);
+            price && f.sharesOutstanding
+                ? price * f.sharesOutstanding
+                : f.marketCap;
 
         return res.status(200).json({
             symbol: ticker,
-            name: price.shortName || f.name,
-            regularMarketPrice: livePrice,
-            regularMarketChangePercent: price.regularMarketChangePercent ?? 0,
+            name: f.name,
+            regularMarketPrice: price,
             marketCap: computedCap,
-            sharesOutstanding: shares
+            sharesOutstanding: f.sharesOutstanding
         });
 
     } catch (err) {
         console.error("Stock details error:", err);
+
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
-
-
-
-  
