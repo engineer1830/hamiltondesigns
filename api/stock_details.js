@@ -1,6 +1,6 @@
 import fundamentals from "../data/fundamentals.json";
 
-// This API pulls from yahoo finance quote API - changes made due to inaccurate previous close price in chart API
+// This API pulls from yahoo finance quote API and chart API for various elements of the data using the free API data
 
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
