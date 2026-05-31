@@ -42,7 +42,12 @@ export default async function handler(req, res) {
         }
 
         const price = result.meta?.regularMarketPrice ?? 0;
-        const prevClose = result.meta?.previousClose ?? 0;
+
+        let prevClose = result.meta?.previousClose;
+        if (!prevClose) {
+            const closes = result.indicators?.quote?.[0]?.close || [];
+            prevClose = closes.reverse().find(c => c != null) ?? 0;
+        }
 
         const changePercent =
             prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
@@ -64,6 +69,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
+
 
 
 
