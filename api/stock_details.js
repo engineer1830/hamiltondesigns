@@ -27,33 +27,41 @@ export default async function handler(req, res) {
         const f = fundamentals[ticker] || {
             name: ticker,
             sharesOutstanding: 0,
-            marketCap: 0
+            marketCap: 0,
+            changePercent: 0
         };
 
+        // If Yahoo fails, return fundamentals fallback
         if (!result) {
             return res.status(200).json({
                 symbol: ticker,
                 name: f.name,
                 regularMarketPrice: 0,
-                regularMarketChangePercent: 0,
-                marketCap: f.marketCap,
-                sharesOutstanding: f.sharesOutstanding
+                regularMarketChangePercent: f.changePercent ?? 0,
+                marketCap: f.marketCap ?? 0,
+                sharesOutstanding: f.sharesOutstanding ?? 0
             });
         }
 
         const price = result.meta?.regularMarketPrice ?? 0;
 
+        // Previous Close can be prevClose or result.indicators.quote[0].close
         let prevClose = result.meta?.previousClose;
         if (!prevClose) {
             const closes = result.indicators?.quote?.[0]?.close || [];
             prevClose = closes.reverse().find(c => c != null) ?? 0;
         }
 
-        const changePercent =
+        let changePercent =
             prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
 
         const shares = f.sharesOutstanding ?? 0;
-        const marketCap = price && shares ? price * shares : f.marketCap;
+        let marketCap = price && shares ? price * shares : f.marketCap;
+
+        // One additional layer of fallback protection for API call issues
+        if (!price && f.price) price = f.price;
+        if (!changePercent && f.changePercent) changePercent = f.changePercent;
+        if (!marketCap && f.marketCap) marketCap = f.marketCap;
 
         return res.status(200).json({
             symbol: ticker,
@@ -69,6 +77,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
+
 
 
 
