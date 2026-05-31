@@ -16,31 +16,18 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
+    const chartUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=5d`;
     const quoteUrl = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`;
 
     try {
-        const quoteRes = await fetch(quoteUrl, {
-            headers: {
-                "User-Agent": "Mozilla/5.0",
-                "Accept": "application/json",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Cookie": "A1=dummy; A3=dummy; B=dummy;"
-            }
+        // ⭐ Fetch chart data (always works)
+        const chartRes = await fetch(chartUrl, {
+            headers: { "User-Agent": "Mozilla/5.0" }
         });
-        
+        const chartData = await chartRes.json();
+        const chart = chartData?.chart?.result?.[0];
 
-        // ⭐ If Yahoo blocks us, quoteRes.ok will be false
-        if (!quoteRes.ok) {
-            console.error("Yahoo Quote API error:", quoteRes.status);
-        }
-
-        const quoteData = await quoteRes.json();
-        console.log("QUOTE RAW:", JSON.stringify(quoteData, null, 2));
-
-
-        // ⭐ Safe extraction — no crashes
-        const quote = quoteData?.quoteResponse?.result?.[0];
-
+        // ⭐ Fundamentals fallback
         const f = fundamentals[ticker] || {
             name: ticker,
             sharesOutstanding: 0,
@@ -48,34 +35,54 @@ export default async function handler(req, res) {
             changePercent: 0
         };
 
-        // ⭐ If Quote API returned nothing, fallback
-        if (!quote) {
+        // ⭐ If chart fails entirely
+        if (!chart) {
             return res.status(200).json({
                 symbol: ticker,
                 name: f.name,
                 regularMarketPrice: 0,
-                regularMarketChangePercent: f.changePercent ?? 0,
-                marketCap: f.marketCap ?? 0,
-                sharesOutstanding: f.sharesOutstanding ?? 0
+                regularMarketChangePercent: f.changePercent,
+                marketCap: f.marketCap,
+                sharesOutstanding: f.sharesOutstanding
             });
         }
 
-        // ⭐ Extract accurate values
-        let price = quote.regularMarketPrice ?? 0;
-        let changePercent = quote.regularMarketChangePercent ?? 0;
+        // ⭐ Extract price
+        const price = chart.meta?.regularMarketPrice ?? 0;
+
+        // ⭐ Extract previous close (bulletproof)
+        let prevClose = chart.meta?.previousClose;
+        if (!prevClose) {
+            const closes = chart.indicators?.quote?.[0]?.close || [];
+            prevClose = closes.slice().reverse().find(c => c != null) ?? 0;
+        }
+
+        // ⭐ Compute changePercent manually
+        let changePercent =
+            prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
 
         // ⭐ Compute market cap
         const shares = f.sharesOutstanding ?? 0;
         let marketCap = price && shares ? price * shares : f.marketCap;
 
-        // ⭐ Final fallback protection
-        if (!price && f.price) price = f.price;
-        if (!changePercent && f.changePercent) changePercent = f.changePercent;
-        if (!marketCap && f.marketCap) marketCap = f.marketCap;
+        // ⭐ Try Quote API ONLY as a fallback (no cookies needed)
+        try {
+            const quoteRes = await fetch(quoteUrl, {
+                headers: { "User-Agent": "Mozilla/5.0" }
+            });
+            const quoteData = await quoteRes.json();
+            const quote = quoteData?.quoteResponse?.result?.[0];
+
+            if (quote?.regularMarketChangePercent != null) {
+                changePercent = quote.regularMarketChangePercent;
+            }
+        } catch (e) {
+            console.log("Quote fallback failed, using chart data only");
+        }
 
         return res.status(200).json({
             symbol: ticker,
-            name: quote.longName || f.name,
+            name: f.name,
             regularMarketPrice: price,
             regularMarketChangePercent: changePercent,
             marketCap,
@@ -84,18 +91,10 @@ export default async function handler(req, res) {
 
     } catch (err) {
         console.error("Stock details error:", err);
-
-        // ⭐ Still return CORS-safe response
-        return res.status(200).json({
-            symbol: ticker,
-            name: ticker,
-            regularMarketPrice: 0,
-            regularMarketChangePercent: 0,
-            marketCap: 0,
-            sharesOutstanding: 0
-        });
+        return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
+
 
 
 
