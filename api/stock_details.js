@@ -14,8 +14,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    // ⭐ Use Yahoo's public quote API (no crumb required)
-    const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`;
+    const yahooUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
 
     try {
         const yahooRes = await fetch(yahooUrl, {
@@ -23,7 +22,7 @@ export default async function handler(req, res) {
         });
 
         const yahooData = await yahooRes.json();
-        const quote = yahooData?.quoteResponse?.result?.[0];
+        const result = yahooData?.chart?.result?.[0];
 
         const f = fundamentals[ticker] || {
             name: ticker,
@@ -31,8 +30,7 @@ export default async function handler(req, res) {
             marketCap: 0
         };
 
-        if (!quote) {
-            console.error("Yahoo returned no data for", ticker);
+        if (!result) {
             return res.status(200).json({
                 symbol: ticker,
                 name: f.name,
@@ -43,18 +41,23 @@ export default async function handler(req, res) {
             });
         }
 
-        const price = quote.regularMarketPrice ?? 0;
-        const shares = quote.sharesOutstanding ?? f.sharesOutstanding ?? 0;
+        const price = result.meta?.regularMarketPrice ?? 0;
+        const prevClose = result.meta?.previousClose ?? 0;
 
-        const computedCap =
-            price && shares ? price * shares : (quote.marketCap || f.marketCap);
+        // ⭐ Compute change percent manually
+        const changePercent =
+            prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
+
+        // ⭐ Compute market cap manually
+        const shares = f.sharesOutstanding ?? 0;
+        const marketCap = price && shares ? price * shares : f.marketCap;
 
         return res.status(200).json({
             symbol: ticker,
-            name: quote.shortName || f.name,
+            name: f.name,
             regularMarketPrice: price,
-            regularMarketChangePercent: quote.regularMarketChangePercent ?? 0,
-            marketCap: computedCap,
+            regularMarketChangePercent: changePercent,
+            marketCap,
             sharesOutstanding: shares
         });
 
