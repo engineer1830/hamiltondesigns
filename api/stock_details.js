@@ -2,8 +2,6 @@ import fundamentals from "../data/fundamentals.json";
 
 // This API pulls from yahoo finance quote API - changes made due to inaccurate previous close price in chart API
 
-import fundamentals from "../data/fundamentals.json";
-
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -18,18 +16,27 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    // Yahoo Quote API reference
     const quoteUrl = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`;
 
     try {
         const quoteRes = await fetch(quoteUrl, {
-            headers: { "User-Agent": "Mozilla/5.0" }
+            headers: {
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/json",
+                "Accept-Language": "en-US,en;q=0.9"
+            }
         });
 
+        // ⭐ If Yahoo blocks us, quoteRes.ok will be false
+        if (!quoteRes.ok) {
+            console.error("Yahoo Quote API error:", quoteRes.status);
+        }
+
         const quoteData = await quoteRes.json();
+
+        // ⭐ Safe extraction — no crashes
         const quote = quoteData?.quoteResponse?.result?.[0];
 
-        // If Yahoo fails, return fundamentals fallback
         const f = fundamentals[ticker] || {
             name: ticker,
             sharesOutstanding: 0,
@@ -37,7 +44,7 @@ export default async function handler(req, res) {
             changePercent: 0
         };
 
-        // Fallback when API fails to get data for the quote
+        // ⭐ If Quote API returned nothing, fallback
         if (!quote) {
             return res.status(200).json({
                 symbol: ticker,
@@ -49,13 +56,15 @@ export default async function handler(req, res) {
             });
         }
 
+        // ⭐ Extract accurate values
         let price = quote.regularMarketPrice ?? 0;
         let changePercent = quote.regularMarketChangePercent ?? 0;
 
+        // ⭐ Compute market cap
         const shares = f.sharesOutstanding ?? 0;
         let marketCap = price && shares ? price * shares : f.marketCap;
 
-        // One additional layer of fallback protection for API call issues
+        // ⭐ Final fallback protection
         if (!price && f.price) price = f.price;
         if (!changePercent && f.changePercent) changePercent = f.changePercent;
         if (!marketCap && f.marketCap) marketCap = f.marketCap;
@@ -71,9 +80,19 @@ export default async function handler(req, res) {
 
     } catch (err) {
         console.error("Stock details error:", err);
-        return res.status(500).json({ error: "Failed to fetch stock details" });
+
+        // ⭐ Still return CORS-safe response
+        return res.status(200).json({
+            symbol: ticker,
+            name: ticker,
+            regularMarketPrice: 0,
+            regularMarketChangePercent: 0,
+            marketCap: 0,
+            sharesOutstanding: 0
+        });
     }
 }
+
 
 
 // Commented out is API that pulls from yahoo finance chart API
