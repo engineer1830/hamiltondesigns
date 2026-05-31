@@ -14,7 +14,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    const yahooUrl = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=price,summaryDetail`;
+    // ⭐ Use Yahoo's public quote API (no crumb required)
+    const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`;
 
     try {
         const yahooRes = await fetch(yahooUrl, {
@@ -22,14 +23,7 @@ export default async function handler(req, res) {
         });
 
         const yahooData = await yahooRes.json();
-        const result = yahooData?.quoteSummary?.result?.[0];
-
-        if (!result) {
-            return res.status(500).json({ error: "Invalid Yahoo response" });
-        }
-
-        const price = result.price;
-        const summary = result.summaryDetail;
+        const quote = yahooData?.quoteResponse?.result?.[0];
 
         const f = fundamentals[ticker] || {
             name: ticker,
@@ -37,17 +31,29 @@ export default async function handler(req, res) {
             marketCap: 0
         };
 
-        const livePrice = price.regularMarketPrice ?? 0;
-        const shares = price.sharesOutstanding ?? f.sharesOutstanding ?? 0;
+        if (!quote) {
+            console.error("Yahoo returned no data for", ticker);
+            return res.status(200).json({
+                symbol: ticker,
+                name: f.name,
+                regularMarketPrice: 0,
+                regularMarketChangePercent: 0,
+                marketCap: f.marketCap,
+                sharesOutstanding: f.sharesOutstanding
+            });
+        }
+
+        const price = quote.regularMarketPrice ?? 0;
+        const shares = quote.sharesOutstanding ?? f.sharesOutstanding ?? 0;
 
         const computedCap =
-            livePrice && shares ? livePrice * shares : (price.marketCap || summary.marketCap || f.marketCap);
+            price && shares ? price * shares : (quote.marketCap || f.marketCap);
 
         return res.status(200).json({
             symbol: ticker,
-            name: price.shortName || f.name,
-            regularMarketPrice: livePrice,
-            regularMarketChangePercent: price.regularMarketChangePercent ?? 0,
+            name: quote.shortName || f.name,
+            regularMarketPrice: price,
+            regularMarketChangePercent: quote.regularMarketChangePercent ?? 0,
             marketCap: computedCap,
             sharesOutstanding: shares
         });
@@ -57,6 +63,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch stock details" });
     }
 }
+
 
 
 
