@@ -23,9 +23,11 @@ export default async function handler(req, res) {
             headers: {
                 "User-Agent": "Mozilla/5.0",
                 "Accept": "application/json",
-                "Accept-Language": "en-US,en;q=0.9"
+                "Accept-Language": "en-US,en;q=0.9",
+                "Cookie": "A1=dummy; A3=dummy; B=dummy;"
             }
         });
+        
 
         // ⭐ If Yahoo blocks us, quoteRes.ok will be false
         if (!quoteRes.ok) {
