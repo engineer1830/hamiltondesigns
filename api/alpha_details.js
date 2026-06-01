@@ -1,50 +1,58 @@
-export async function getStockDetail(ticker) {
-    try {
-        // Fetch Alpha fundamentals
-        const alphaRes = await fetch(
-            `https://hamiltondesigns.vercel.app/api/alpha_details?ticker=${ticker}`
-        );
-        const alpha = await alphaRes.json();
+export default async function handler(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-        if (alpha.error) {
-            console.warn(`Alpha details missing for ${ticker}:`, alpha.error);
-            return { symbol: ticker };
+    if (req.method === "OPTIONS") {
+        return res.status(200).end();
+    }
+
+    const ticker = req.query.ticker?.toUpperCase();
+    if (!ticker) {
+        return res.status(400).json({ error: "Ticker is required" });
+    }
+
+    const ALPHA_KEY = process.env.ALPHA_KEY;
+    const alphaUrl = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${ALPHA_KEY}`;
+
+    try {
+        const alphaRes = await fetch(alphaUrl, {
+            headers: { "User-Agent": "Mozilla/5.0" }
+        });
+
+        const alphaData = await alphaRes.json();
+
+        if (!alphaData || Object.keys(alphaData).length === 0) {
+            return res.status(200).json({
+                symbol: ticker,
+                error: "No Alpha Vantage data returned"
+            });
         }
 
-        // Fetch Yahoo price
-        const yahooRes = await fetch(
-            `https://hamiltondesigns.vercel.app/api/yahoo_quote?ticker=${ticker}`
-        );
-        const yahoo = await yahooRes.json();
-
-        return {
+        return res.status(200).json({
             symbol: ticker,
-            name: alpha.name,
-            description: alpha.description,
-            sector: alpha.sector,
-            industry: alpha.industry,
-
-            // Price from YAHOO
-            price: yahoo.regularMarketPrice,
-            change: yahoo.regularMarketChange,
-            changePercent: yahoo.regularMarketChangePercent,
-
-            // Fundamentals from ALPHA
-            marketCapAlpha: alpha.marketCap,
-            peRatio: alpha.peRatio,
-            eps: alpha.eps,
-            dividendYield: alpha.dividendYield,
-            profitMargin: alpha.profitMargin,
-            returnOnEquity: alpha.returnOnEquity,
-            returnOnAssets: alpha.returnOnAssets,
-            revenueTTM: alpha.revenueTTM,
-            fiftyTwoWeekHigh: alpha.fiftyTwoWeekHigh,
-            fiftyTwoWeekLow: alpha.fiftyTwoWeekLow
-        };
+            name: alphaData.Name,
+            description: alphaData.Description,
+            sector: alphaData.Sector,
+            industry: alphaData.Industry,
+            marketCap: Number(alphaData.MarketCapitalization),
+            peRatio: Number(alphaData.PERatio),
+            eps: Number(alphaData.EPS),
+            dividendYield: Number(alphaData.DividendYield),
+            profitMargin: Number(alphaData.ProfitMargin),
+            returnOnEquity: Number(alphaData.ReturnOnEquityTTM),
+            returnOnAssets: Number(alphaData.ReturnOnAssetsTTM),
+            revenueTTM: Number(alphaData.RevenueTTM),
+            fiftyTwoWeekHigh: Number(alphaData["52WeekHigh"]),
+            fiftyTwoWeekLow: Number(alphaData["52WeekLow"])
+        });
 
     } catch (err) {
-        console.error("Stock detail fetch failed for", ticker, err);
-        return { symbol: ticker };
+        console.error("Alpha details error:", err);
+
+        return res.status(500).json({
+            error: "Failed to fetch Alpha Vantage details"
+        });
     }
 }
 
