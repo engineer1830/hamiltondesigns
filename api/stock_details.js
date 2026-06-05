@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Ticker is required" });
     }
 
-    // ⭐ Spark API — best for daily movement
+    // Spark API — best for daily movement
     const sparkUrl = `https://query2.finance.yahoo.com/v7/finance/spark?symbols=${ticker}&range=5d&interval=1d`;
 
     try {
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
             changePercent: 0
         };
 
-        // ⭐ If Spark API fails entirely
+        // If Spark API fails entirely
         if (!spark) {
             return res.status(200).json({
                 symbol: ticker,
@@ -47,17 +47,17 @@ export default async function handler(req, res) {
             });
         }
 
-        // ⭐ Extract price
+        // Extract price
         const price = spark.meta?.regularMarketPrice ?? 0;
 
-        // ⭐ Extract previous close (Spark always provides this)
+        // Extract previous close (Spark always provides this)
         const prevClose = spark.meta?.chartPreviousClose ?? 0;
 
-        // ⭐ Compute change percent
+        // Compute change percent
         const changePercent =
             prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
 
-        // ⭐ Compute market cap
+        // Compute market cap
         const shares = f.sharesOutstanding ?? 0;
         const marketCap = price && shares ? price * shares : f.marketCap;
 
@@ -85,88 +85,6 @@ export default async function handler(req, res) {
 }
 
 
-
-
-
-// Commented out is API that pulls from yahoo finance chart API
-
-// export default async function handler(req, res) {
-//     res.setHeader("Access-Control-Allow-Origin", "*");
-//     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-//     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-//     if (req.method === "OPTIONS") {
-//         return res.status(200).end();
-//     }
-
-//     const ticker = req.query.ticker?.toUpperCase();
-//     if (!ticker) {
-//         return res.status(400).json({ error: "Ticker is required" });
-//     }
-
-//     const yahooUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
-
-//     try {
-//         const yahooRes = await fetch(yahooUrl, {
-//             headers: { "User-Agent": "Mozilla/5.0" }
-//         });
-
-//         const yahooData = await yahooRes.json();
-//         const result = yahooData?.chart?.result?.[0];
-
-//         const f = fundamentals[ticker] || {
-//             name: ticker,
-//             sharesOutstanding: 0,
-//             marketCap: 0,
-//             changePercent: 0
-//         };
-
-//         // If Yahoo fails, return fundamentals fallback
-//         if (!result) {
-//             return res.status(200).json({
-//                 symbol: ticker,
-//                 name: f.name,
-//                 regularMarketPrice: 0,
-//                 regularMarketChangePercent: f.changePercent ?? 0,
-//                 marketCap: f.marketCap ?? 0,
-//                 sharesOutstanding: f.sharesOutstanding ?? 0
-//             });
-//         }
-
-//         const price = result.meta?.regularMarketPrice ?? 0;
-
-//         // Previous Close can be prevClose or result.indicators.quote[0].close
-//         let prevClose = result.meta?.previousClose;
-//         if (!prevClose) {
-//             const closes = result.indicators?.quote?.[0]?.close || [];
-//             prevClose = closes.reverse().find(c => c != null) ?? 0;
-//         }
-
-//         let changePercent =
-//             prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
-
-//         const shares = f.sharesOutstanding ?? 0;
-//         let marketCap = price && shares ? price * shares : f.marketCap;
-
-//         // One additional layer of fallback protection for API call issues
-//         if (!price && f.price) price = f.price;
-//         if (!changePercent && f.changePercent) changePercent = f.changePercent;
-//         if (!marketCap && f.marketCap) marketCap = f.marketCap;
-
-//         return res.status(200).json({
-//             symbol: ticker,
-//             name: f.name,
-//             regularMarketPrice: price,
-//             regularMarketChangePercent: changePercent,
-//             marketCap,
-//             sharesOutstanding: shares
-//         });
-
-//     } catch (err) {
-//         console.error("Stock details error:", err);
-//         return res.status(500).json({ error: "Failed to fetch stock details" });
-//     }
-// }
 
 
 
